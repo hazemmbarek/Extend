@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const { email, password } = await request.json();
 
     const [rows] = await pool.query(
-      'SELECT id_user, email, password, first_name, last_name FROM Users WHERE email = ?',
+      'SELECT * FROM extend.users WHERE email = ?',
       [email]
     );
     const users = rows as any[];
@@ -29,9 +29,9 @@ export async function POST(request: Request) {
     // Create JWT token
     const token = jwt.sign(
       { 
-        userId: user.id_user,
+        userId: user.user_id,
         email: user.email,
-        name: `${user.first_name} ${user.last_name}`
+        username: user.username
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
@@ -42,9 +42,9 @@ export async function POST(request: Request) {
       { 
         message: 'Login successful',
         user: {
-          id: user.id_user,
+          id: user.user_id,
           email: user.email,
-          name: `${user.first_name} ${user.last_name}`
+          username: user.username
         }
       },
       { status: 200 }

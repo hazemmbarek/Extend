@@ -6,8 +6,20 @@ export async function POST() {
     { status: 200 }
   );
 
-  // Clear the auth token cookie
-  response.cookies.delete('auth_token');
+  // Clear the auth cookies
+  response.cookies.set('auth_token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 0
+  });
+
+  response.cookies.set('profile_creation_token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 0
+  });
 
   return response;
 } 
