@@ -1,0 +1,6 @@
+mysql2
+bcryptjs
+jsonwebtoken
+next-auth@beta
+zod
+uuid
