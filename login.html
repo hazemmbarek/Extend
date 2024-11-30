@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Connexion - EXTEND</title>
+  <meta name="description" content="Connexion à votre compte EXTEND">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #6A1B9A;
+      --white-color: #FFFFFF;
+      --light-gray: #F5F5F5;
+      --shadow: rgba(106, 27, 154, 0.1);
+      --transition: all 0.3s ease;
+      --text-color: #333333;
+    }
+
+    body {
+      font-family: 'League Spartan', sans-serif;
+      background-image: url('assets/img/hero-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 2;
+      background-color: var(--white-color);
+      border-radius: 10px;
+      box-shadow: 0 5px 25px var(--shadow);
+      padding: 40px;
+      width: 100%;
+      max-width: 450px;
+      margin: 20px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-header img {
+      max-width: 150px;
+      margin-bottom: 20px;
+    }
+
+    .login-header h2 {
+      color: var(--primary-color);
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-control {
+      border: 1px solid var(--light-gray);
+      padding: 12px 15px;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem var(--shadow);
+    }
+
+    .btn-login {
+      background-color: var(--primary-color);
+      color: var(--white-color);
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-top: 10px;
+      transition: var(--transition);
+    }
+
+    .btn-login:hover {
+      background-color: #581583;
+      transform: translateY(-2px);
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .login-footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .back-to-home {
+      position: relative;
+      z-index: 2;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: var(--white-color);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .back-to-home:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html" class="back-to-home">
+    <i class="bi bi-arrow-left"></i>
+    Retour à l'accueil
+  </a>
+
+  <div class="login-container">
+    <div class="login-header">
+      <img src="assets/img/logo2.png" alt="EXTEND Logo">
+      <h2>Connexion</h2>
+      <p>Accédez à votre espace membre</p>
+    </div>
+
+    <form action="#" method="POST" class="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required placeholder="Votre adresse email">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input type="password" class="form-control" id="password" name="password" required placeholder="Votre mot de passe">
+      </div>
+
+      <div class="form-group d-flex justify-content-between align-items-center">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="remember">
+          <label class="form-check-label" for="remember">Se souvenir de moi</label>
+        </div>
+        <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+      </div>
+
+      <button type="submit" class="btn-login">Se connecter</button>
+    </form>
+  </div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+
+  <!-- Main JS File -->
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Formations - EXTEND</title>
+  <meta name="description" content="Catalogue des formations EXTEND">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #6A1B9A;
+      --white-color: #FFFFFF;
+      --light-gray: #F5F5F5;
+      --shadow: rgba(106, 27, 154, 0.1);
+      --transition: all 0.3s ease;
+      --text-color: #333333;
+    }
+
+    /* Styles généraux */
+    body {
+      font-family: 'League Spartan', sans-serif;
+      background-color: var(--light-gray);
+    }
+
+    /* Header des formations */
+    .formations-header {
+      background: linear-gradient(rgba(106, 27, 154, 0.8), rgba(106, 27, 154, 0.9)), url('assets/img/formations-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      padding: 100px 0 60px;
+      color: var(--white-color);
+      text-align: center;
+      margin-bottom: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .formations-header::before {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 100px;
+      background: var(--white-color);
+      transform: skewY(-2deg);
+      z-index: 1;
+    }
+
+    .formations-header .container {
+      position: relative;
+      z-index: 2;
+    }
+
+    .formations-header h1 {
+      color: var(--white-color);
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .formations-header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 800px;
+      margin: 0 auto;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Filtres */
+    .formations-filters {
+      background-color: var(--white-color);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 25px var(--shadow);
+    }
+
+    .filter-button {
+      background: transparent;
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
+      padding: 8px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      transition: var(--transition);
+    }
+
+    .filter-button:hover,
+    .filter-button.active {
+      background-color: var(--primary-color);
+      color: var(--white-color);
+    }
+
+    /* Cartes de formation */
+    .formation-item {
+      transition: all 0.3s ease-in-out;
+    }
+
+    .formation-card {
+      background: var(--white-color);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 25px var(--shadow);
+      margin-bottom: 30px;
+      transition: var(--transition);
+    }
+
+    .formation-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .formation-img {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .formation-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .formation-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--primary-color);
+      color: var(--white-color);
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+    }
+
+    .formation-content {
+      padding: 20px;
+    }
+
+    .formation-category {
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .formation-content h3 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+
+    .formation-details {
+      margin-bottom: 15px;
+    }
+
+    .formation-details ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .formation-details li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      color: var(--text-color);
+    }
+
+    .formation-details i {
+      margin-right: 10px;
+      color: var(--primary-color);
+    }
+
+    .formation-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 15px;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    .price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .btn-details {
+      background-color: var(--primary-color);
+      color: var(--white-color);
+      padding: 8px 20px;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .btn-details:hover {
+      background-color: #581583;
+      color: var(--white-color);
+    }
+
+    /* Ajustement de la section suivante */
+    .formations-section {
+      padding-top: 50px;
+      background-color: var(--white-color);
+      position: relative;
+      z-index: 2;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center">
+      <a href="index.html" class="logo d-flex align-items-center me-auto">
+        <img src="assets/img/logo2.png" alt="">
+        <h1 class="sitename">Extend</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="formations.html" class="active">Formations</a></li>
+          <li><a href="#pricing">Commissions</a></li>
+          <li><a href="#team">Paiements</a></li>
+          <li><a href="#contact">Arbre de parrainage</a></li>
+          <li><a href="login.html" class="btn-login"><span>Connexion</span></a></li>
+          <li><a href="register.html" class="btn-register"><span>Inscription</span></a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Formations Header -->
+  <section class="formations-header">
+    <div class="container">
+      <h1>Catalogue des Formations</h1>
+     <br>
+     <br>
+    </div>
+  </section>
+
+  <!-- Formations Section -->
+  <section class="formations-section">
+    <div class="container">
+      <!-- Filtres -->
+      <div class="formations-filters text-center">
+        <button class="filter-button active" data-filter="all">Toutes</button>
+        <button class="filter-button" data-filter="marketing">Marketing Digital</button>
+        <button class="filter-button" data-filter="leadership">Leadership</button>
+        <button class="filter-button" data-filter="vente">Vente</button>
+        <button class="filter-button" data-filter="developpement">Développement Personnel</button>
+      </div>
+
+      <!-- Liste des formations -->
+      <div class="row">
+        <!-- Formation 1 - Gold Mind -->
+        <div class="col-lg-4 col-md-6 formation-item developpement">
+          <div class="formation-card">
+            <div class="formation-img">
+              <img src="assets/img/form4.png" alt="Formation Gold Mind Mentaliste">
+              <div class="formation-badge">Bestseller</div>
+            </div>
+            <div class="formation-content">
+              <div class="formation-category">Développement Personnel</div>
+              <h3>Gold Mind - Mentaliste Professionnel</h3>
+              <div class="formation-details">
+                <ul>
+                  <li><i class="bi bi-clock"></i> 30 heures de contenu</li>
+                  <li><i class="bi bi-person-check"></i> 500+ étudiants</li>
+                  <li><i class="bi bi-star-fill"></i> 4.9/5 (95 avis)</li>
+                  <li><i class="bi bi-translate"></i> Français</li>
+                  <li><i class="bi bi-book"></i> Jeux de l'esprit et lecture des pensées</li>
+                </ul>
+              </div>
+              <div class="formation-footer">
+                <div class="price">799 DT</div>
+                <a href="#" class="btn-details">Voir le détail</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      
+        <!-- Formation 3 - Hypnose -->
+        <div class="col-lg-4 col-md-6 formation-item developpement">
+          <div class="formation-card">
+            <div class="formation-img">
+              <img src="assets/img/form2.jpg" alt="Formation Hypnose">
+              <div class="formation-badge">Nouveau</div>
+            </div>
+            <div class="formation-content">
+              <div class="formation-category">Développement Personnel</div>
+              <h3>Hypnose Thérapeutique</h3>
+              <div class="formation-details">
+                <ul>
+                  <li><i class="bi bi-clock"></i> 35 heures de contenu</li>
+                  <li><i class="bi bi-person-check"></i> 200+ étudiants</li>
+                  <li><i class="bi bi-star-fill"></i> 4.8/5 (45 avis)</li>
+                  <li><i class="bi bi-translate"></i> Français</li>
+                  <li><i class="bi bi-book"></i> Techniques d'hypnose moderne</li>
+                </ul>
+              </div>
+              <div class="formation-footer">
+                <div class="price">699 DT</div>
+                <a href="#" class="btn-details">Voir le détail</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formation 4 - Coaching Mental -->
+        <div class="col-lg-4 col-md-6 formation-item developpement">
+          <div class="formation-card">
+            <div class="formation-img">
+              <img src="assets/img/form3.jpg" alt="Formation Coaching Mental">
+              <div class="formation-badge">Expert</div>
+            </div>
+            <div class="formation-content">
+              <div class="formation-category">Développement Personnel</div>
+              <h3>Coaching Mental et Performance</h3>
+              <div class="formation-details">
+                <ul>
+                  <li><i class="bi bi-clock"></i> 28 heures de contenu</li>
+                  <li><i class="bi bi-person-check"></i> 250+ étudiants</li>
+                  <li><i class="bi bi-star-fill"></i> 4.6/5 (60 avis)</li>
+                  <li><i class="bi bi-translate"></i> Français</li>
+                  <li><i class="bi bi-book"></i> Techniques de coaching avancées</li>
+                </ul>
+              </div>
+              <div class="formation-footer">
+                <div class="price">649 DT</div>
+                <a href="#" class="btn-details">Voir le détail</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+       
+
+        <!-- Formation Leadership 1 -->
+        <div class="col-lg-4 col-md-6 formation-item leadership">
+          <div class="formation-card">
+            <div class="formation-img">
+              <img src="assets/img/form6.jpg" alt="Formation Leadership">
+              <div class="formation-badge">Nouveau</div>
+            </div>
+            <div class="formation-content">
+              <div class="formation-category">Leadership</div>
+              <h3>Leadership et Gestion d'Équipe</h3>
+              <div class="formation-details">
+                <ul>
+                  <li><i class="bi bi-clock"></i> 32 heures de contenu</li>
+                  <li><i class="bi bi-person-check"></i> 400+ étudiants</li>
+                  <li><i class="bi bi-star-fill"></i> 4.8/5 (75 avis)</li>
+                  <li><i class="bi bi-translate"></i> Français</li>
+                  <li><i class="bi bi-book"></i> Management et motivation d'équipe</li>
+                </ul>
+              </div>
+              <div class="formation-footer">
+                <div class="price">749 DT</div>
+                <a href="#" class="btn-details">Voir le détail</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formation Vente 1 -->
+        <div class="col-lg-4 col-md-6 formation-item vente">
+          <div class="formation-card">
+            <div class="formation-img">
+              <img src="assets/img/form5.jpg" alt="Formation Vente">
+              <div class="formation-badge">Bestseller</div>
+            </div>
+            <div class="formation-content">
+              <div class="formation-category">Vente</div>
+              <h3>Techniques de Vente Avancées</h3>
+              <div class="formation-details">
+                <ul>
+                  <li><i class="bi bi-clock"></i> 28 heures de contenu</li>
+                  <li><i class="bi bi-person-check"></i> 600+ étudiants</li>
+                  <li><i class="bi bi-star-fill"></i> 4.9/5 (120 avis)</li>
+                  <li><i class="bi bi-translate"></i> Français</li>
+                  <li><i class="bi bi-book"></i> Négociation et closing</li>
+                </ul>
+              </div>
+              <div class="formation-footer">
+                <div class="price">649 DT</div>
+                <a href="#" class="btn-details">Voir le détail</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="footer" class="footer">
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="index.html" class="d-flex align-items-center">
+            <span class="sitename">EXTEND</span>
+          </a>
+          <div class="footer-contact pt-3">
+            <p>Tunisie</p>
+            <p class="mt-3">
+              <strong>Téléphone:</strong> <span>+216 42 200 300</span>
+            </p>
+            <p>
+              <strong>Email:</strong> <span>contact@lecoach.tn</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Liens Utiles</h4>
+          <ul>
+            <li><i class="bi bi-chevron-right"></i> <a href="#hero">Accueil</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#about">À propos</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#features">Fonctionnalités</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Nos Services</h4>
+          <ul>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Gestion MLM</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Formations</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Commissions</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Support</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+          <h4>Suivez-nous</h4>
+          <p>Restez connecté avec EXTEND pour ne rien manquer de nos actualités et opportunités</p>
+          <div class="social-links d-flex">
+            <a href=""><i class="bi bi-twitter-x"></i></a>
+            <a href=""><i class="bi bi-facebook"></i></a>
+            <a href=""><i class="bi bi-instagram"></i></a>
+            <a href=""><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">EXTEND</strong> <span>Tous droits réservés</span></p>
+      <div class="credits">
+        Développé par <a href="mailto:contact@lecoach.tn">Fady Hamza</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+
+  <!-- Main JS File -->
+  <script src="assets/js/main.js"></script>
+
+  <!-- Script de filtrage -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Sélectionner tous les boutons de filtre
+      const filterButtons = document.querySelectorAll('.filter-button');
+      // Sélectionner toutes les formations
+      const formationItems = document.querySelectorAll('.formation-item');
+
+      // Ajouter un écouteur d'événement à chaque bouton
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Retirer la classe active de tous les boutons
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          // Ajouter la classe active au bouton cliqué
+          this.classList.add('active');
+
+          // Récupérer la valeur du filtre
+          const filterValue = this.getAttribute('data-filter');
+
+          // Filtrer les formations
+          formationItems.forEach(item => {
+            if (filterValue === 'all') {
+              item.style.display = 'block';
+              // Animation avec fade
+              setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'scale(1)';
+              }, 100);
+            } else {
+              if (item.classList.contains(filterValue)) {
+                item.style.display = 'block';
+                setTimeout(() => {
+                  item.style.opacity = '1';
+                  item.style.transform = 'scale(1)';
+                }, 100);
+              } else {
+                item.style.opacity = '0';
+                item.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                  item.style.display = 'none';
+                }, 300);
+              }
+            }
+          });
+        });
+      });
+    });
+  </script>
+</body>
+
+</html> 

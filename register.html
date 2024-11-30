@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Inscription - EXTEND</title>
+  <meta name="description" content="Inscription à EXTEND">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #6A1B9A;
+      --white-color: #FFFFFF;
+      --light-gray: #F5F5F5;
+      --shadow: rgba(106, 27, 154, 0.1);
+      --transition: all 0.3s ease;
+      --text-color: #333333;
+    }
+
+    body {
+      font-family: 'League Spartan', sans-serif;
+      background-image: url('assets/img/hero-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1;
+    }
+
+    .register-container {
+      position: relative;
+      z-index: 2;
+      background-color: var(--white-color);
+      border-radius: 10px;
+      box-shadow: 0 5px 25px var(--shadow);
+      padding: 40px;
+      width: 100%;
+      max-width: 600px;
+      margin: 20px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .register-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .register-header img {
+      max-width: 150px;
+      margin-bottom: 20px;
+    }
+
+    .register-header h2 {
+      color: var(--primary-color);
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-control {
+      border: 1px solid var(--light-gray);
+      padding: 12px 15px;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem var(--shadow);
+    }
+
+    .btn-register {
+      background-color: var(--primary-color);
+      color: var(--white-color);
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-top: 10px;
+      transition: var(--transition);
+    }
+
+    .btn-register:hover {
+      background-color: #581583;
+      transform: translateY(-2px);
+    }
+
+    .back-to-home {
+      position: relative;
+      z-index: 2;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: var(--white-color);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .back-to-home:hover {
+      opacity: 0.8;
+    }
+
+    .register-footer {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .register-footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .register-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html" class="back-to-home">
+    <i class="bi bi-arrow-left"></i>
+    Retour à l'accueil
+  </a>
+
+  <div class="register-container">
+    <div class="register-header">
+      <img src="assets/img/logo2.png" alt="EXTEND Logo">
+      <h2>Inscription</h2>
+      <p>Rejoignez la communauté EXTEND</p>
+    </div>
+
+    <form action="#" method="POST" class="register-form">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="firstname">Prénom</label>
+            <input type="text" class="form-control" id="firstname" name="firstname" required placeholder="Votre prénom">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="lastname">Nom</label>
+            <input type="text" class="form-control" id="lastname" name="lastname" required placeholder="Votre nom">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required placeholder="Votre adresse email">
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Téléphone</label>
+        <input type="tel" class="form-control" id="phone" name="phone" required placeholder="Votre numéro de téléphone">
+      </div>
+
+      <div class="form-group">
+        <label for="sponsor_id">ID de Parrainage</label>
+        <input type="text" class="form-control" id="sponsor_id" name="sponsor_id" required placeholder="ID de votre parrain">
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" class="form-control" id="password" name="password" required placeholder="Créez votre mot de passe">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="confirm_password">Confirmer le mot de passe</label>
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required placeholder="Confirmez votre mot de passe">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="terms" required>
+          <label class="form-check-label" for="terms">J'accepte les conditions d'utilisation et la politique de confidentialité</label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-register">S'inscrire</button>
+    </form>
+
+    <div class="register-footer">
+      <p>Déjà membre ? <a href="login.html">Connectez-vous</a></p>
+    </div>
+  </div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+
+  <!-- Main JS File -->
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html> 
