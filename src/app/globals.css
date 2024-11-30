@@ -773,3 +773,60 @@ section {
     margin-bottom: 30px;
   }
 }
+
+/* Styles pour les boutons de navigation */
+.nav-btn {
+  padding: 10px 30px;
+  margin: 0 8px;
+  border-radius: 5px;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+  min-width: 150px;
+  height: 45px;
+  font-size: 1.1rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.nav-btn span {
+  display: inline-block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+
+.btn-login {
+  background-color: var(--primary-color);
+  color: var(--white-color) !important;
+  border: none;
+}
+
+.btn-login:hover {
+  background-color: #581583;
+  transform: translateY(-2px);
+}
+
+.btn-register {
+  background-color: transparent;
+  color: var(--primary-color) !important;
+  border: 2px solid var(--primary-color);
+}
+
+.btn-register:hover {
+  background-color: var(--primary-color);
+  color: var(--white-color) !important;
+  transform: translateY(-2px);
+}
+
+/* Responsive pour les boutons */
+@media (max-width: 991px) {
+  .nav-btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+}

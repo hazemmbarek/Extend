@@ -1,0 +1,132 @@
+/* Styles spécifiques pour la page d'inscription */
+.signup-layout {
+  min-height: 100vh;
+  background: url('/assets/img/hero-bg.jpg') center/cover no-repeat fixed;
+  position: relative;
+}
+
+.signup-layout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.register-container {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  margin-top: 50px;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.register-header img {
+  width: 150px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.register-header h2 {
+  color: #6A1B9A;
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.register-header p {
+  color: #666;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.form-control:focus {
+  border-color: #6A1B9A;
+  box-shadow: 0 0 0 2px rgba(106, 27, 154, 0.1);
+  outline: none;
+}
+
+.btn-register {
+  width: 100%;
+  padding: 14px;
+  background: #6A1B9A;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-register:hover {
+  background: #581583;
+  transform: translateY(-2px);
+}
+
+.back-to-home {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  z-index: 10;
+}
+
+.back-to-home i {
+  font-size: 20px;
+}
+
+.register-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.register-footer a {
+  color: #6A1B9A;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .register-container {
+    margin: 20px;
+    padding: 20px;
+  }
+} 
