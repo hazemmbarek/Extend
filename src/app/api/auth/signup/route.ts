@@ -2,71 +2,115 @@ import { NextResponse } from 'next/server';
 import { initDB } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { OkPacket } from 'mysql2';
-import jwt from 'jsonwebtoken';
 
-interface SignupData {
+interface SignupRequestBody {
+  username: string;
   email: string;
   password: string;
-  first_name: string;
-  last_name: string;
+  phone_number: string;
+  sponsor_id?: number;
+}
+
+function generateReferralCode(): string {
+  // Generate a random 8-character alphanumeric code
+  return crypto.randomBytes(4).toString('hex').toUpperCase();
+}
+
+function generateQRCodePath(username: string, referralCode: string): string {
+  // For now, just return a placeholder path. You'll need to implement actual QR code generation
+  return `/qrcodes/${username}_${referralCode}.png`;
 }
 
 export async function POST(request: Request) {
-  const pool = initDB();
-
   try {
-    const userData: SignupData = await request.json();
-    
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userData.password, salt);
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const body: SignupRequestBody = await request.json();
+    const { username, email, password, phone_number, sponsor_id } = body;
 
-    const [result] = await pool.query(
-      `INSERT INTO Users (
-        email, password, first_name, last_name, 
-        verification_token
-      ) VALUES (?, ?, ?, ?, ?)`,
+    // Validate required fields
+    if (!username || !email || !password || !phone_number) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    const pool = await initDB();
+
+    // Check if user already exists
+    const [existingUsers] = await pool.execute(
+      'SELECT email FROM users WHERE email = ? OR username = ?',
+      [email, username]
+    );
+
+    if ((existingUsers as any[]).length > 0) {
+      return NextResponse.json(
+        { error: 'User with this email or username already exists' },
+        { status: 409 }
+      );
+    }
+
+    // Validate sponsor_id if provided
+    if (sponsor_id) {
+      const [sponsors] = await pool.execute(
+        'SELECT id FROM users WHERE id = ?',
+        [sponsor_id]
+      );
+
+      if ((sponsors as any[]).length === 0) {
+        return NextResponse.json(
+          { error: 'Invalid sponsor ID' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Generate referral code
+    const referralCode = generateReferralCode();
+
+    // Generate QR code path
+    const qrCodePath = generateQRCodePath(username, referralCode);
+
+    // Insert new user
+    const [result] = await pool.execute(
+      `INSERT INTO users (
+        username, 
+        email, 
+        password, 
+        phone_number, 
+        sponsor_id,
+        referral_code,
+        qr_code_path,
+        status,
+        role
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 'user')`,
       [
-        userData.email,
+        username,
+        email,
         hashedPassword,
-        userData.first_name,
-        userData.last_name,
-        verificationToken
+        phone_number,
+        sponsor_id || null,
+        referralCode,
+        qrCodePath
       ]
     );
 
-    // Create auth token
-    const token = jwt.sign(
-      { userId: (result as OkPacket).insertId },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
-    );
+    // Get the inserted user ID
+    const userId = (result as any).insertId;
 
-    const response = NextResponse.json({ 
-      message: 'User registered successfully',
-      id: (result as OkPacket).insertId,
-      verification_token: verificationToken
+    return NextResponse.json({
+      message: 'User created successfully',
+      userId,
+      referralCode
     }, { status: 201 });
 
-    // Set both tokens in cookies
-    response.cookies.set('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 86400 // 24 hours
-    });
-
-    response.cookies.set('profile_creation_token', 'true', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 300 // 5 minutes
-    });
-
-    return response;
-  } catch (error) {
-    console.error('Failed to create user:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Signup error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 } 

@@ -16,28 +16,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for auth token
-  const authToken = request.cookies.get('auth_token');
-  const profileToken = request.cookies.get('profile_creation_token');
-  const isEditing = request.nextUrl.searchParams.get('edit') === 'true';
+  try {
+    // Check for auth token
+    const authToken = request.cookies.get('auth_token');
+    const profileToken = request.cookies.get('profile_creation_token');
+    const isEditing = request.nextUrl.searchParams.get('edit') === 'true';
 
-  // If no token found, redirect to login
-  if (!authToken) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('from', request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
-  }
+    // If no token found, redirect to login
+    if (!authToken) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('from', request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
+    }
 
-  // For the profile creation page specifically
-  if (request.nextUrl.pathname === '/profile') {
-    try {
+    // For the profile creation page specifically
+    if (request.nextUrl.pathname === '/profile') {
       // Decode token to get user ID
-      const decoded = jwt.verify(authToken.value, process.env.JWT_SECRET || 'your-secret-key') as any;
+      const decoded = jwt.verify(authToken.value, process.env.JWT_SECRET!) as { userId: string };
       const userId = decoded.userId;
 
       // Check if profile exists
-      const pool = initDB();
-      const [rows] = await pool.query(
+      const pool = await initDB();
+      const [rows] = await pool.execute(
         'SELECT id_profile FROM profiles WHERE id_user = ?',
         [userId]
       );
@@ -52,18 +52,27 @@ export async function middleware(request: NextRequest) {
       if (!profiles.length && !profileToken) {
         return NextResponse.redirect(new URL('/', request.url));
       }
-    } catch (error) {
-      console.error('Middleware error:', error);
-      return NextResponse.redirect(new URL('/', request.url));
     }
-  }
 
-  return NextResponse.next();
+    return NextResponse.next();
+  } catch (error) {
+    console.error('Middleware error:', error);
+    // On error, redirect to home page
+    return NextResponse.redirect(new URL('/', request.url));
+  }
 }
 
 // Configure which routes should be protected
 export const config = {
   matcher: [
-   
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ]
 }; 
