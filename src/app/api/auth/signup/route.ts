@@ -100,10 +100,16 @@ export async function POST(request: Request) {
     // Get the inserted user ID
     const userId = (result as any).insertId;
 
+    // After successful user creation, fetch the generated referral code
+    const [newUser] = await pool.query(
+      'SELECT id, referral_code FROM extend.users WHERE id = ?',
+      [userId]
+    );
+
     return NextResponse.json({
-      message: 'User created successfully',
-      userId,
-      referralCode
+      message: "User created successfully",
+      userId: (newUser as any[])[0].id,
+      referralCode: (newUser as any[])[0].referral_code
     }, { status: 201 });
 
   } catch (error: any) {
