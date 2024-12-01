@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { fetchWithSSL } from '@/lib/fetchWithSSL';
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -8,27 +11,31 @@ interface DeleteAccountModalProps {
 
 export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountModalProps) {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      const response = await fetch('/api/profile', {
+      const response = await fetchWithSSL('/api/profile', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || 'Erreur lors de la suppression du compte');
       }
 
-      // Rediriger vers la page de connexion
-      router.push('/login');
+      // Redirect to home page after successful deletion
+      router.push('/');
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
@@ -45,7 +52,13 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
         <p className="warning-text">
           Attention ! Cette action est irréversible. Toutes vos données seront supprimées.
         </p>
-        {error && <div className="alert alert-danger">{error}</div>}
+
+        {error && (
+          <div className="alert alert-danger">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Confirmez votre mot de passe</label>
@@ -54,14 +67,25 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
+
           <div className="modal-actions">
-            <button type="button" onClick={onClose} disabled={loading}>
+            <button 
+              type="button" 
+              onClick={onClose}
+              disabled={loading}
+              className="btn-cancel"
+            >
               Annuler
             </button>
-            <button type="submit" className="btn-danger" disabled={loading}>
-              {loading ? 'Chargement...' : 'Supprimer mon compte'}
+            <button 
+              type="submit"
+              disabled={loading}
+              className="btn-danger"
+            >
+              {loading ? 'Suppression...' : 'Supprimer mon compte'}
             </button>
           </div>
         </form>
@@ -89,16 +113,22 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
           max-width: 400px;
         }
 
-        .form-group {
-          margin-bottom: 1rem;
+        .warning-text {
+          color: #dc3545;
+          margin-bottom: 1.5rem;
+          font-weight: 500;
         }
 
-        .form-group label {
+        .form-group {
+          margin-bottom: 1.5rem;
+        }
+
+        label {
           display: block;
           margin-bottom: 0.5rem;
         }
 
-        .form-group input {
+        input {
           width: 100%;
           padding: 0.5rem;
           border: 1px solid #ddd;
@@ -109,14 +139,14 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
           display: flex;
           justify-content: flex-end;
           gap: 1rem;
-          margin-top: 2rem;
         }
 
         button {
           padding: 0.5rem 1rem;
-          border-radius: 4px;
           border: none;
+          border-radius: 4px;
           cursor: pointer;
+          font-weight: 500;
         }
 
         button:disabled {
@@ -124,19 +154,26 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
           cursor: not-allowed;
         }
 
-        .btn-primary {
-          background: var(--primary-color);
-          color: white;
-        }
-
-        .warning-text {
-          color: #dc3545;
-          margin-bottom: 1rem;
+        .btn-cancel {
+          background: #f8f9fa;
+          color: #212529;
         }
 
         .btn-danger {
           background: #dc3545;
           color: white;
+        }
+
+        .alert {
+          padding: 1rem;
+          border-radius: 4px;
+          margin-bottom: 1rem;
+        }
+
+        .alert-danger {
+          background: #f8d7da;
+          color: #721c24;
+          border: 1px solid #f5c6cb;
         }
       `}</style>
     </div>

@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import './profile.css';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import CommissionsTab from '@/components/profile/CommissionsTab';
 import FormationsTab from '@/components/profile/FormationsTab';
 import { FormationsProvider } from '@/contexts/FormationsContext';
+import DeleteAccountModal from '@/components/profile/DeleteAccountModal';
 
 interface UserProfile {
   username: string;
@@ -56,10 +57,12 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [summary, setSummary] = useState<CommissionSummary | null>(null);
   const [loadingCommissions, setLoadingCommissions] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -135,6 +138,10 @@ export default function Profile() {
     } catch (error) {
       console.error('Error updating profile picture:', error);
     }
+  };
+
+  const handlePasswordChange = () => {
+    router.push('/forgot-password');
   };
 
   if (loading) {
@@ -305,7 +312,10 @@ export default function Profile() {
             <div className="info-card">
               <h2>Paramètres</h2>
               <div className="settings-grid">
-                <button className="settings-btn">
+                <button 
+                  className="settings-btn"
+                  onClick={handlePasswordChange}
+                >
                   <i className="bi bi-shield-lock"></i>
                   Changer le mot de passe
                 </button>
@@ -313,7 +323,10 @@ export default function Profile() {
                   <i className="bi bi-person-gear"></i>
                   Modifier le profil
                 </button>
-                <button className="settings-btn danger">
+                <button 
+                  className="settings-btn danger"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                >
                   <i className="bi bi-trash"></i>
                   Supprimer le compte
                 </button>
@@ -322,6 +335,11 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      <DeleteAccountModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+      />
 
       <style jsx>{`
         .profile-section .info-card {

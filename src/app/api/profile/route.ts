@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { initDB } from '@/lib/db';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import bcrypt from 'bcryptjs';
 
 export async function GET() {
   try {
@@ -95,6 +96,62 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error('Update profile picture error:', error);
+    return NextResponse.json(
+      { error: 'Une erreur est survenue' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth_token')?.value;
+    
+    if (!authToken) {
+      return NextResponse.json(
+        { error: 'Non autorisé' },
+        { status: 401 }
+      );
+    }
+
+    const decoded = jwt.verify(authToken, process.env.JWT_SECRET!) as { userId: number };
+    const { password } = await request.json();
+
+    const pool = initDB();
+    
+    // Verify password
+    const [users] = await pool.query(
+      'SELECT password FROM users WHERE id = ?',
+      [decoded.userId]
+    );
+
+    const user = (users as any[])[0];
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Utilisateur non trouvé' },
+        { status: 404 }
+      );
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'Mot de passe incorrect' },
+        { status: 400 }
+      );
+    }
+
+    // Delete user and related data
+    await pool.query('DELETE FROM users WHERE id = ?', [decoded.userId]);
+
+    // Clear auth cookie
+    const response = NextResponse.json({ message: 'Compte supprimé avec succès' });
+    response.cookies.delete('auth_token');
+    return response;
+
+  } catch (error) {
+    console.error('Delete account error:', error);
     return NextResponse.json(
       { error: 'Une erreur est survenue' },
       { status: 500 }
