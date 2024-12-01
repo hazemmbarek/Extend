@@ -13,19 +13,11 @@ export const Header = () => {
 
         <nav id="navmenu" className="navmenu">
           <ul>
-            <li><Link href="#hero" className="active">Accueil</Link></li>
+            <li><Link href="/" className="active">Accueil</Link></li>
             <li><Link href="/formations">Formations</Link></li>
-            <li><Link href="#contact">Arbre de parrainage</Link></li>
-            <li>
-              <Link href="/signin" className="nav-btn btn-login">
-                <span>Connexion</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/signup" className="nav-btn btn-register">
-                <span>Inscription</span>
-              </Link>
-            </li>
+            <li><Link href="/referral">Arbre de parrainage</Link></li>
+            <li><Link href="/signin" className="btn-login"><span>Connexion</span></Link></li>
+            <li><Link href="/signup" className="btn-register"><span>Inscription</span></Link></li>
           </ul>
           <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
