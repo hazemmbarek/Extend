@@ -34,6 +34,18 @@
       --text-color: #333333;
     }
 
+    /* Copier tout le CSS de base de index.html */
+    /* Correction des couleurs des icônes et titres */
+    .bi {
+      color: var(--primary-color) !important;
+    }
+
+    /* Correction des liens et textes */
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
     /* Styles généraux */
     body {
       font-family: 'League Spartan', sans-serif;
@@ -227,6 +239,80 @@
       position: relative;
       z-index: 2;
     }
+
+    /* Header */
+    .header {
+      background-color: var(--white-color);
+      box-shadow: 0 2px 10px var(--shadow);
+    }
+
+    .header .sitename {
+      color: var(--primary-color) !important;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    /* Navigation */
+    .navmenu a {
+      color: var(--text-color);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+      padding: 8px 15px;
+      position: relative;
+    }
+
+    .navmenu a:hover,
+    .navmenu .active {
+      color: var(--primary-color) !important;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--light-gray);
+      padding: 60px 0 30px;
+    }
+
+    .footer-links a {
+      color: var(--text-color);
+      text-decoration: none;
+      transition: var(--transition);
+      display: block;
+      padding: 5px 0;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary-color) !important;
+      padding-left: 10px;
+    }
+
+    .footer h4,
+    .footer-about h4 {
+      color: var(--primary-color) !important;
+    }
+
+    .footer-contact strong {
+      color: var(--primary-color);
+    }
+
+    .social-links a {
+      background-color: var(--primary-color);
+      color: var(--white-color) !important;
+    }
+
+    .social-links a:hover {
+      background-color: var(--light-gray);
+      color: var(--primary-color) !important;
+    }
+
+    .copyright {
+      color: var(--text-color);
+    }
+
+    .copyright .sitename {
+      color: var(--primary-color) !important;
+    }
   </style>
 </head>
 
@@ -243,8 +329,6 @@
         <ul>
           <li><a href="index.html">Accueil</a></li>
           <li><a href="formations.html" class="active">Formations</a></li>
-          <li><a href="#pricing">Commissions</a></li>
-          <li><a href="#team">Paiements</a></li>
           <li><a href="#contact">Arbre de parrainage</a></li>
           <li><a href="login.html" class="btn-login"><span>Connexion</span></a></li>
           <li><a href="register.html" class="btn-register"><span>Inscription</span></a></li>
@@ -298,7 +382,7 @@
               </div>
               <div class="formation-footer">
                 <div class="price">799 DT</div>
-                <a href="#" class="btn-details">Voir le détail</a>
+                <a href="paiements.html" class="btn-details">Paiements</a>
               </div>
             </div>
           </div>
@@ -326,7 +410,7 @@
               </div>
               <div class="formation-footer">
                 <div class="price">699 DT</div>
-                <a href="#" class="btn-details">Voir le détail</a>
+                <a href="paiements.html" class="btn-details">Paiements</a>
               </div>
             </div>
           </div>
@@ -353,7 +437,7 @@
               </div>
               <div class="formation-footer">
                 <div class="price">649 DT</div>
-                <a href="#" class="btn-details">Voir le détail</a>
+                <a href="paiements.html" class="btn-details">Paiements</a>
               </div>
             </div>
           </div>
@@ -382,7 +466,7 @@
               </div>
               <div class="formation-footer">
                 <div class="price">749 DT</div>
-                <a href="#" class="btn-details">Voir le détail</a>
+                <a href="paiements.html" class="btn-details">Paiements</a>
               </div>
             </div>
           </div>
@@ -409,7 +493,8 @@
               </div>
               <div class="formation-footer">
                 <div class="price">649 DT</div>
-                <a href="#" class="btn-details">Voir le détail</a>
+                <a href="paiements.html" class="btn-details">Paiements</a>
+               
               </div>
             </div>
           </div>
