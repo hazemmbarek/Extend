@@ -25,7 +25,9 @@ export async function GET() {
         phone_number,
         referral_code,
         created_at,
+        profile_picture,
         qr_code_path,
+        CAST(profile_picture AS BINARY) as profile_picture_binary,
         CAST(qr_code_path AS BINARY) as qr_code_binary
       FROM users
       WHERE id = ?
@@ -40,6 +42,13 @@ export async function GET() {
       );
     }
 
+    // Convert binary profile picture to base64
+    let profilePictureUrl = null;
+    if (user.profile_picture_binary) {
+      const buffer = Buffer.from(user.profile_picture_binary);
+      profilePictureUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+    }
+
     // Convert binary QR code to base64
     let qrCodeBase64 = null;
     if (user.qr_code_binary) {
@@ -49,6 +58,7 @@ export async function GET() {
 
     return NextResponse.json({
       ...user,
+      profile_picture: profilePictureUrl,
       qr_code: qrCodeBase64,
       total_formations: 0,
       total_commissions: 0

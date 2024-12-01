@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
 interface TreeNode {
@@ -6,6 +6,7 @@ interface TreeNode {
   name: string;
   children: TreeNode[];
   level: number;
+  isActive: boolean;
 }
 
 interface SponsorshipTreeProps {
@@ -14,6 +15,7 @@ interface SponsorshipTreeProps {
 
 export default function SponsorshipTree({ data }: SponsorshipTreeProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
@@ -21,7 +23,8 @@ export default function SponsorshipTree({ data }: SponsorshipTreeProps) {
     // Clear previous content
     d3.select(svgRef.current).selectAll("*").remove();
 
-    const margin = { top: 20, right: 120, bottom: 20, left: 120 };
+    // Ajuster les marges pour mieux aligner
+    const margin = { top: 100, right: 120, bottom: 20, left: 120 };
     const width = 1200 - margin.left - margin.right;
     const height = 800 - margin.top - margin.bottom;
 
@@ -43,47 +46,75 @@ export default function SponsorshipTree({ data }: SponsorshipTreeProps) {
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Creates a tree layout with modified orientation
+    // Calculer la largeur de chaque niveau
+    const levelSpacing = width / 5; // 5 espaces pour 6 niveaux
+    const levels = [
+      { level: 0, title: "Vous", description: "Racine", commission: "" },
+      { level: 1, title: "Niveau 1", description: "Parrainages directs", commission: "20% commission" },
+      { level: 2, title: "Niveau 2", description: "Parrainages indirects", commission: "15% commission" },
+      { level: 3, title: "Niveau 3", description: "Réseau étendu", commission: "10% commission" },
+      { level: 4, title: "Niveau 4", description: "Réseau élargi", commission: "5% commission" },
+      { level: 5, title: "Niveau 5", description: "Réseau global", commission: "2.5% commission" }
+    ];
+
+    // Creates a tree layout with fixed node positions
     const treeLayout = d3.tree<TreeNode>()
-      .size([height, width])
-      .nodeSize([50, 150]); // Adjust node spacing
+      .size([height - 100, width])
+      .nodeSize([60, levelSpacing]); // Ajuster la taille des nœuds
 
     // Creates a hierarchy from the data
     const root = d3.hierarchy(data);
 
-    // Move the root node to the left
-    root.x0 = height / 2;
-    root.y0 = 0;
-
-    // Assigns x,y positions to nodes and shift everything right
+    // Assigns x,y positions to nodes
     const treeData = treeLayout(root);
-    
-    // Shift all nodes to the right
+
+    // Ajuster les positions des nœuds pour aligner avec les séparateurs
     treeData.descendants().forEach(d => {
-      d.y = d.depth * 180 + 200; // Increase the multiplier and add base offset
+      d.y = d.depth * levelSpacing;
     });
 
-    // Create level lines
-    const levels = Array.from({ length: 6 }, (_, i) => i);
-    
-    // Add level indicators with adjusted positions
-    levels.forEach(level => {
-      const xPos = level * 180 + 200; // Match the node positioning
+    // Add vertical separators and level information
+    levels.forEach((levelInfo, i) => {
+      const x = i * levelSpacing;
+
+      // Add separator line
       g.append("line")
-        .attr("class", "level-line")
-        .attr("x1", xPos)
-        .attr("x2", xPos)
-        .attr("y1", 0)
+        .attr("x1", x)
+        .attr("x2", x)
+        .attr("y1", -80)
         .attr("y2", height)
         .style("stroke", "#e0e0e0")
         .style("stroke-dasharray", "5,5");
 
+      // Add level title
       g.append("text")
-        .attr("class", "level-text")
-        .attr("x", xPos)
-        .attr("y", -10)
+        .attr("x", x + levelSpacing / 2)
+        .attr("y", -60)
         .attr("text-anchor", "middle")
-        .text(`Niveau ${level}`);
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("fill", getNodeColor(levelInfo.level))
+        .text(levelInfo.title);
+
+      // Add level description
+      g.append("text")
+        .attr("x", x + levelSpacing / 2)
+        .attr("y", -40)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .style("fill", "#666")
+        .text(levelInfo.description);
+
+      // Add commission info
+      if (levelInfo.commission) {
+        g.append("text")
+          .attr("x", x + levelSpacing / 2)
+          .attr("y", -20)
+          .attr("text-anchor", "middle")
+          .style("font-size", "12px")
+          .style("fill", "#4CAF50")
+          .text(levelInfo.commission);
+      }
     });
 
     // Add links between nodes
@@ -107,30 +138,32 @@ export default function SponsorshipTree({ data }: SponsorshipTreeProps) {
       .attr("class", d => `node level-${d.data.level}`)
       .attr("transform", d => `translate(${d.y},${d.x})`);
 
-    // Rest of the node styling remains the same
+    // Add node backgrounds
     nodes.append("circle")
-      .attr("r", 20)
+      .attr("r", 25)
       .style("fill", d => getNodeColor(d.data.level))
-      .style("stroke", "#fff")
-      .style("stroke-width", "2px")
+      .style("stroke", d => d.data.isActive ? "#4CAF50" : "#ff0000")
+      .style("stroke-width", "3px")
+      .style("cursor", "pointer")
       .on("mouseover", function(event, d) {
         d3.select(this)
           .transition()
           .duration(200)
-          .attr("r", 25);
+          .attr("r", 30);
       })
       .on("mouseout", function(event, d) {
         d3.select(this)
           .transition()
           .duration(200)
-          .attr("r", 20);
+          .attr("r", 25);
       });
 
     // Add user names
     nodes.append("text")
-      .attr("dy", -25)
+      .attr("dy", -30)
       .attr("text-anchor", "middle")
-      .style("font-size", "12px")
+      .style("font-size", "14px")
+      .style("font-weight", "bold")
       .text(d => d.data.name);
 
     // Add level numbers
@@ -138,39 +171,33 @@ export default function SponsorshipTree({ data }: SponsorshipTreeProps) {
       .attr("dy", 5)
       .attr("text-anchor", "middle")
       .style("fill", "#fff")
+      .style("font-size", "14px")
+      .text(d => `N${d.data.level}`);
+
+    // Add status indicator
+    nodes.append("text")
+      .attr("dy", 35)
+      .attr("text-anchor", "middle")
       .style("font-size", "12px")
-      .text(d => d.data.level);
+      .style("fill", d => d.data.isActive ? "#4CAF50" : "#ff0000")
+      .text(d => d.data.isActive ? "Actif" : "Inactif");
 
-  }, [data]);
+  }, [data, selectedLevel]);
 
-  // Function to get node color based on level
   const getNodeColor = (level: number): string => {
-    const colors = [
-      '#4CAF50', // Level 0 - Green
-      '#2196F3', // Level 1 - Blue
-      '#9C27B0', // Level 2 - Purple
-      '#FF9800', // Level 3 - Orange
-      '#F44336', // Level 4 - Red
-      '#795548'  // Level 5 - Brown
-    ];
-    return colors[level] || colors[0];
+    const colors = {
+      0: '#2E7D32', // Dark Green
+      1: '#1976D2', // Dark Blue
+      2: '#7B1FA2', // Dark Purple
+      3: '#F57C00', // Dark Orange
+      4: '#D32F2F', // Dark Red
+      5: '#5D4037'  // Dark Brown
+    };
+    return colors[level as keyof typeof colors] || colors[0];
   };
 
   return (
     <div className="sponsorship-tree">
-      <div className="controls">
-        <button onClick={() => {
-          const svg = d3.select(svgRef.current);
-          svg
-            .transition()
-            .duration(750)
-            .call(
-              (d3.zoom<SVGSVGElement, unknown>() as any)
-              .transform,
-              d3.zoomIdentity.translate(0, 0).scale(1)
-            );
-        }}>Reset Zoom</button>
-      </div>
       <svg ref={svgRef}></svg>
       <style jsx>{`
         .sponsorship-tree {
@@ -180,21 +207,6 @@ export default function SponsorshipTree({ data }: SponsorshipTreeProps) {
           padding: 1rem;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .controls {
-          margin-bottom: 1rem;
-          margin-left: 200px; // Align with the tree
-        }
-        .controls button {
-          padding: 0.5rem 1rem;
-          background: #4CAF50;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        .controls button:hover {
-          background: #45a049;
         }
       `}</style>
     </div>

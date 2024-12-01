@@ -37,7 +37,13 @@ export async function POST(request: Request) {
       [buffer, decoded.userId]
     );
 
-    return NextResponse.json({ message: 'Profile picture uploaded successfully' });
+    // Return the new image as base64
+    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
+
+    return NextResponse.json({ 
+      message: 'Profile picture updated successfully',
+      profile_picture: base64Image
+    });
 
   } catch (error) {
     console.error('Upload error:', error);

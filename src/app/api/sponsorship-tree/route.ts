@@ -8,6 +8,7 @@ interface TreeNode {
   name: string;
   children: TreeNode[];
   level: number;
+  isActive: boolean;
 }
 
 export async function GET() {
@@ -33,7 +34,8 @@ export async function GET() {
           u.id,
           u.username,
           st.sponsor_id,
-          0 as level
+          0 as level,
+          CASE WHEN u.status = 'active' THEN true ELSE false END as isActive
         FROM users u
         LEFT JOIN sponsorship_tree st ON u.id = st.user_id
         WHERE u.id = ?
@@ -45,7 +47,8 @@ export async function GET() {
           u.id,
           u.username,
           st.sponsor_id,
-          sc.level + 1
+          sc.level + 1,
+          CASE WHEN u.status = 'active' THEN true ELSE false END as isActive
         FROM users u
         JOIN sponsorship_tree st ON u.id = st.user_id
         JOIN sponsorship_cte sc ON st.sponsor_id = sc.id
@@ -63,6 +66,7 @@ export async function GET() {
           id: node.id,
           name: node.username,
           level: node.level,
+          isActive: node.isActive,
           children: buildTree(nodes, node.id, level + 1)
         }));
     };

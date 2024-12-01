@@ -87,11 +87,23 @@ export default function Profile() {
       <div className="profile-header">
         <div className="profile-cover">
           <div className="profile-avatar-container">
-            <img
-              src={profile.profile_picture || '/assets/img/default-avatar.png'}
-              alt={profile.username}
-              className="profile-avatar"
-            />
+            <div className="profile-avatar">
+              {profile.profile_picture ? (
+                <img
+                  src={profile.profile_picture}
+                  alt={profile.username}
+                  width={200}
+                  height={200}
+                />
+              ) : (
+                <img
+                  src="/assets/img/default-avatar.png"
+                  alt="Default avatar"
+                  width={200}
+                  height={200}
+                />
+              )}
+            </div>
             <label htmlFor="avatar-upload" className="edit-avatar-btn">
               <i className="bi bi-pencil-fill"></i>
             </label>
