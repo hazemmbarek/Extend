@@ -7,6 +7,38 @@ export default function CommissionsTab() {
   const [summary, setSummary] = useState<CommissionSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<'all' | 'month' | 'quarter' | 'year'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'paid'>('all');
+
+  // Fonction pour filtrer les commissions
+  const filterCommissions = (commissions: Commission[]) => {
+    let filtered = [...commissions];
+
+    // Filtre par date
+    if (dateRange !== 'all') {
+      const now = new Date();
+      const startDate = new Date();
+      switch (dateRange) {
+        case 'month':
+          startDate.setMonth(now.getMonth() - 1);
+          break;
+        case 'quarter':
+          startDate.setMonth(now.getMonth() - 3);
+          break;
+        case 'year':
+          startDate.setFullYear(now.getFullYear() - 1);
+          break;
+      }
+      filtered = filtered.filter(c => new Date(c.date) >= startDate);
+    }
+
+    // Filtre par statut
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(c => c.status === statusFilter);
+    }
+
+    return filtered;
+  };
 
   useEffect(() => {
     fetch('/api/commissions')
@@ -21,7 +53,11 @@ export default function CommissionsTab() {
             totalTVA: 0,
             totalRetenue: 0,
             netAmount: 0,
-            byGeneration: {}
+            totalCaritative: 0,
+            totalPending: 0,
+            totalPaid: 0,
+            byGeneration: {},
+            byPeriod: {}
           });
         }
       })
@@ -34,53 +70,64 @@ export default function CommissionsTab() {
       });
   }, []);
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Chargement...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-container">
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      </div>
-    );
-  }
+  const filteredCommissions = filterCommissions(commissions);
 
   return (
     <div className="commissions-container">
+      <div className="filters-section">
+        <div className="filter-group">
+          <label>Période :</label>
+          <select 
+            value={dateRange} 
+            onChange={(e) => setDateRange(e.target.value as any)}
+          >
+            <option value="all">Toutes les périodes</option>
+            <option value="month">Dernier mois</option>
+            <option value="quarter">Dernier trimestre</option>
+            <option value="year">Dernière année</option>
+          </select>
+        </div>
+        <div className="filter-group">
+          <label>Statut :</label>
+          <select 
+            value={statusFilter} 
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+          >
+            <option value="all">Tous les statuts</option>
+            <option value="pending">En attente</option>
+            <option value="paid">Payées</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Résumé des commissions */}
       <div className="commission-summary">
         <h3>Résumé des Commissions</h3>
         <div className="summary-grid">
           <div className="summary-card">
             <h4>Total Brut</h4>
-            <p>{(summary?.totalCommissions || 0).toFixed(2)}€</p>
+            <p>{(summary?.totalCommissions || 0).toFixed(3)} TND</p>
+          </div>
+          <div className="summary-card">
+            <h4>En attente</h4>
+            <p>{(summary?.totalPending || 0).toFixed(3)} TND</p>
+          </div>
+          <div className="summary-card">
+            <h4>Payées</h4>
+            <p>{(summary?.totalPaid || 0).toFixed(3)} TND</p>
           </div>
           <div className="summary-card">
             <h4>TVA (19%)</h4>
-            <p>{(summary?.totalTVA || 0).toFixed(2)}€</p>
+            <p>{(summary?.totalTVA || 0).toFixed(3)} TND</p>
           </div>
           <div className="summary-card">
             <h4>Retenue (10%)</h4>
-            <p>{(summary?.totalRetenue || 0).toFixed(2)}€</p>
+            <p>{(summary?.totalRetenue || 0).toFixed(3)} TND</p>
           </div>
           <div className="summary-card total">
             <h4>Net à percevoir</h4>
-            <p>{(summary?.netAmount || 0).toFixed(2)}€</p>
+            <p>{(summary?.netAmount || 0).toFixed(3)} TND</p>
           </div>
-          {summary?.totalCaritative > 0 && (
-            <div className="summary-card caritative">
-              <h4>Dons caritatifs (6ème gén.)</h4>
-              <p>{summary.totalCaritative.toFixed(2)}€</p>
-            </div>
-          )}
         </div>
 
         <div className="generation-details">
@@ -102,42 +149,45 @@ export default function CommissionsTab() {
 
         <div className="commissions-list">
           <h3>Historique des Commissions</h3>
-          {commissions.length > 0 ? (
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Formation</th>
-                  <th>De</th>
-                  <th>Génération</th>
-                  <th>Montant Base</th>
-                  <th>Taux</th>
-                  <th>Commission</th>
-                  <th>TVA</th>
-                  <th>Retenue</th>
-                  <th>Net</th>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Formation</th>
+                <th>De</th>
+                <th>Génération</th>
+                <th>Montant Base</th>
+                <th>Commission</th>
+                <th>TVA</th>
+                <th>Retenue</th>
+                <th>Net</th>
+                <th>Statut</th>
+                <th>Date Paiement</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCommissions.map(comm => (
+                <tr key={comm.id} className={`${comm.isCaritative ? 'caritative-row' : ''} status-${comm.status}`}>
+                  <td>{new Date(comm.date).toLocaleDateString()}</td>
+                  <td>{comm.trainingName}</td>
+                  <td>{comm.fromUser}</td>
+                  <td>{comm.generation}</td>
+                  <td>{comm.baseAmount.toFixed(3)} TND</td>
+                  <td>{comm.amount.toFixed(3)} TND</td>
+                  <td>{comm.tva.toFixed(3)} TND</td>
+                  <td>{comm.retenueSurce.toFixed(3)} TND</td>
+                  <td>{comm.finalAmount.toFixed(3)} TND</td>
+                  <td>
+                    <span className={`status-badge ${comm.status}`}>
+                      {comm.status === 'pending' ? 'En attente' : 
+                       comm.status === 'paid' ? 'Payée' : 'Échouée'}
+                    </span>
+                  </td>
+                  <td>{comm.payment_date ? new Date(comm.payment_date).toLocaleDateString() : '-'}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {commissions.map(comm => (
-                  <tr key={comm.id} className={comm.isCaritative ? 'caritative-row' : ''}>
-                    <td>{new Date(comm.date).toLocaleDateString()}</td>
-                    <td>{comm.trainingName}</td>
-                    <td>{comm.fromUser}</td>
-                    <td>{comm.generation}</td>
-                    <td>{comm.baseAmount.toFixed(2)}€</td>
-                    <td>{(comm.rate * 100).toFixed(0)}%</td>
-                    <td>{comm.amount.toFixed(2)}€</td>
-                    <td>{comm.tva.toFixed(2)}€</td>
-                    <td>{comm.retenueSurce.toFixed(2)}€</td>
-                    <td>{comm.finalAmount.toFixed(2)}€</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="empty-state">Aucun historique de commission disponible</p>
-          )}
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -238,6 +288,58 @@ export default function CommissionsTab() {
         .summary-card.caritative {
           background: #dc3545;
           color: white;
+        }
+
+        .filters-section {
+          display: flex;
+          gap: 20px;
+          margin-bottom: 20px;
+        }
+
+        .filter-group {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .filter-group select {
+          padding: 8px;
+          border-radius: 4px;
+          border: 1px solid #ddd;
+        }
+
+        .status-badge {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 500;
+        }
+
+        .status-badge.pending {
+          background: #ffc107;
+          color: #000;
+        }
+
+        .status-badge.paid {
+          background: #4CAF50;
+          color: white;
+        }
+
+        .status-badge.failed {
+          background: #f44336;
+          color: white;
+        }
+
+        .status-pending {
+          background-color: rgba(255, 193, 7, 0.1);
+        }
+
+        .status-paid {
+          background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .status-failed {
+          background-color: rgba(244, 67, 54, 0.1);
         }
       `}</style>
     </div>

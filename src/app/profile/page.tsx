@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import './profile.css';
 import { useSearchParams } from 'next/navigation';
+import CommissionsTab from '@/components/profile/CommissionsTab';
+import FormationsTab from '@/components/profile/FormationsTab';
+import { FormationsProvider } from '@/contexts/FormationsContext';
 
 interface UserProfile {
   username: string;
@@ -152,21 +155,15 @@ export default function Profile() {
         <div className="profile-cover">
           <div className="profile-avatar-container">
             <div className="profile-avatar">
-              {profile.profile_picture ? (
-                <img
-                  src={profile.profile_picture}
-                  alt={profile.username}
-                  width={200}
-                  height={200}
-                />
-              ) : (
-                <img
-                  src="/assets/img/default-avatar.png"
-                  alt="Default avatar"
-                  width={200}
-                  height={200}
-                />
-              )}
+              <img
+                src={profile.profile_picture || '/assets/img/default-avatar.png'}
+                alt={profile.username}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = '/assets/img/default-avatar.png';
+                }}
+              />
             </div>
             <label htmlFor="avatar-upload" className="edit-avatar-btn">
               <i className="bi bi-pencil-fill"></i>
@@ -265,9 +262,14 @@ export default function Profile() {
                 <h3>Code de parrainage QR</h3>
                 <div className="qr-code-container">
                   <img 
-                    src={profile.qr_code} 
+                    src={profile.qr_code || '/assets/img/default-qr.png'} 
                     alt="Code QR de parrainage" 
                     className="qr-code-image"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = '/assets/img/default-qr.png';
+                    }}
                   />
                   <p className="referral-code-display">
                     Code: {profile.referral_code}
@@ -282,10 +284,9 @@ export default function Profile() {
           <div className="profile-section">
             <div className="info-card">
               <h2>Mes Formations</h2>
-              <p className="empty-state">
-                <i className="bi bi-book"></i>
-                Vous n'avez pas encore de formations
-              </p>
+              <FormationsProvider>
+                <FormationsTab />
+              </FormationsProvider>
             </div>
           </div>
         )}
@@ -294,101 +295,7 @@ export default function Profile() {
           <div className="profile-section">
             <div className="info-card">
               <h2>Mes Commissions</h2>
-              
-              {loadingCommissions ? (
-                <div className="loading-container">
-                  <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Chargement...</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="commission-summary">
-                  <div className="summary-grid">
-                    <div className="summary-card">
-                      <h4>Total Brut</h4>
-                      <p>{(summary?.totalCommissions || 0).toFixed(3)} TND</p>
-                    </div>
-                    <div className="summary-card">
-                      <h4>TVA (19%)</h4>
-                      <p>{(summary?.totalTVA || 0).toFixed(3)} TND</p>
-                    </div>
-                    <div className="summary-card">
-                      <h4>Retenue (10%)</h4>
-                      <p>{(summary?.totalRetenue || 0).toFixed(3)} TND</p>
-                    </div>
-                    <div className="summary-card total">
-                      <h4>Net à percevoir</h4>
-                      <p>{(summary?.netAmount || 0).toFixed(3)} TND</p>
-                    </div>
-                    {summary?.totalCaritative > 0 && (
-                      <div className="summary-card caritative">
-                        <h4>Dons caritatifs (6ème gén.)</h4>
-                        <p>{summary.totalCaritative.toFixed(3)} TND</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="generation-details">
-                    <h3>Détails par Génération</h3>
-                    <div className="generation-grid">
-                      {summary && Object.entries(summary.byGeneration).map(([gen, data]) => (
-                        <div key={gen} className={`generation-card ${data.isCaritative ? 'caritative' : ''}`}>
-                          <h4>Génération {gen}</h4>
-                          <p>Taux: {data.rate}%</p>
-                          <p>Nombre: {data.count}</p>
-                          <p>Total: {data.total.toFixed(3)} TND</p>
-                          {data.isCaritative && (
-                            <span className="caritative-badge">Caritatif</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="commissions-list">
-                    <h3>Historique des Commissions</h3>
-                    {commissions.length > 0 ? (
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Formation</th>
-                            <th>De</th>
-                            <th>Génération</th>
-                            <th>Montant Base</th>
-                            <th>Taux</th>
-                            <th>Commission</th>
-                            <th>TVA</th>
-                            <th>Retenue</th>
-                            <th>Net</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {commissions.map(comm => (
-                            <tr key={comm.id} className={comm.isCaritative ? 'caritative-row' : ''}>
-                              <td>{new Date(comm.date).toLocaleDateString()}</td>
-                              <td>{comm.trainingName}</td>
-                              <td>{comm.fromUser}</td>
-                              <td>{comm.generation}</td>
-                              <td>{comm.baseAmount.toFixed(3)} TND</td>
-                              <td>{(comm.rate * 100).toFixed(0)}%</td>
-                              <td>{comm.amount.toFixed(3)} TND</td>
-                              <td>{comm.tva.toFixed(3)} TND</td>
-                              <td>{comm.retenueSurce.toFixed(3)} TND</td>
-                              <td>{comm.finalAmount.toFixed(3)} TND</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <p className="empty-state">
-                        <i className="bi bi-cash"></i>
-                        Aucun historique de commission disponible
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
+              <CommissionsTab />
             </div>
           </div>
         )}
@@ -415,6 +322,34 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .profile-section .info-card {
+          background: white;
+          border-radius: 12px;
+          padding: 30px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-section .info-card h2 {
+          color: var(--primary-color);
+          margin-bottom: 25px;
+          font-size: 1.5rem;
+        }
+
+        /* Styles spécifiques pour l'onglet des commissions */
+        .profile-section .info-card :global(.commissions-container) {
+          padding: 0;
+        }
+
+        .profile-section .info-card :global(.summary-grid) {
+          margin-top: 20px;
+        }
+
+        .profile-section .info-card :global(.filters-section) {
+          margin-top: 20px;
+        }
+      `}</style>
     </div>
   );
 } 

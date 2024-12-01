@@ -415,4 +415,70 @@
   .commissions-list {
     overflow-x: auto;
   }
+}
+
+/* Styles pour l'onglet des commissions */
+.profile-section .commissions-container {
+  padding: 0;
+}
+
+.profile-section .commission-summary {
+  margin-top: 20px;
+}
+
+.profile-section .filters-section {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.profile-section .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-section .filter-group label {
+  font-weight: 500;
+  color: #666;
+}
+
+.profile-section .filter-group select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+/* Responsive design pour les commissions */
+@media (max-width: 768px) {
+  .profile-section .filters-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .profile-section .filter-group {
+    width: 100%;
+  }
+
+  .profile-section .filter-group select {
+    flex: 1;
+  }
+
+  .profile-section .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-section .generation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-section .commissions-list {
+    overflow-x: auto;
+  }
 } 

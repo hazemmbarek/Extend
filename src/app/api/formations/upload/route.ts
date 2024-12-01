@@ -17,26 +17,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const decoded = jwt.verify(authToken, process.env.JWT_SECRET!) as { userId: number };
     const formData = await request.formData();
     const file = formData.get('file') as File;
+    const trainingId = formData.get('trainingId') as string;
 
-    if (!file) {
+    if (!file || !trainingId) {
       return NextResponse.json(
-        { error: 'No file provided' },
+        { error: 'File and trainingId are required' },
         { status: 400 }
       );
     }
 
     // Créer le dossier d'upload s'il n'existe pas
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'users');
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'formations');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
     // Générer un nom de fichier unique
     const fileExtension = file.name.split('.').pop();
-    const fileName = `user-${decoded.userId}-${Date.now()}.${fileExtension}`;
+    const fileName = `formation-${trainingId}-${Date.now()}.${fileExtension}`;
     const filePath = path.join(uploadDir, fileName);
 
     // Convertir le fichier en buffer et le sauvegarder
@@ -47,13 +47,13 @@ export async function POST(request: Request) {
     // Sauvegarder le chemin dans la base de données
     const pool = initDB();
     await pool.query(
-      'UPDATE users SET profile_picture = ? WHERE id = ?',
-      [fileName, decoded.userId]
+      'UPDATE trainings SET thumbnail_image = ? WHERE id = ?',
+      [fileName, trainingId]
     );
 
     return NextResponse.json({ 
-      message: 'Profile picture updated successfully',
-      profile_picture: `/uploads/users/${fileName}`
+      message: 'Formation image updated successfully',
+      thumbnail_image: `/uploads/formations/${fileName}`
     });
 
   } catch (error) {

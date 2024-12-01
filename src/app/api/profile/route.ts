@@ -42,26 +42,22 @@ export async function GET() {
       );
     }
 
-    // Convert binary profile picture to base64
     let profilePictureUrl = null;
     if (user.profile_picture_binary) {
       const buffer = Buffer.from(user.profile_picture_binary);
       profilePictureUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
     }
 
-    // Convert binary QR code to base64
-    let qrCodeBase64 = null;
+    let qrCodeUrl = null;
     if (user.qr_code_binary) {
       const buffer = Buffer.from(user.qr_code_binary);
-      qrCodeBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
+      qrCodeUrl = `data:image/png;base64,${buffer.toString('base64')}`;
     }
 
     return NextResponse.json({
       ...user,
       profile_picture: profilePictureUrl,
-      qr_code: qrCodeBase64,
-      total_formations: 0,
-      total_commissions: 0
+      qr_code: qrCodeUrl
     });
 
   } catch (error) {

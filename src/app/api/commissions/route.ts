@@ -16,97 +16,108 @@ export async function GET() {
     const decoded = jwt.verify(authToken, process.env.JWT_SECRET!) as { userId: number };
     const pool = initDB();
 
-    // Get all commissions with their generation levels
-    const [commissions] = await pool.query(`
-      WITH RECURSIVE user_tree AS (
-        -- Base case: direct referrals (1st generation)
+    try {
+      // Vérifier si les tables existent
+      const [tables] = await pool.query(`
+        SELECT TABLE_NAME 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME IN ('training_purchases', 'commissions', 'commission_payments')
+      `);
+
+      // Si les tables n'existent pas encore, retourner des données vides
+      if ((tables as any[]).length < 3) {
+        return NextResponse.json({
+          commissions: [],
+          summary: {
+            totalCommissions: 0,
+            totalTVA: 0,
+            totalRetenue: 0,
+            netAmount: 0,
+            totalCaritative: 0,
+            byGeneration: {}
+          }
+        });
+      }
+
+      // Si les tables existent, procéder à la requête normale
+      const [commissions] = await pool.query(`
         SELECT 
-          u.id as user_id,
-          r.id as referral_id,
-          1 as generation
-        FROM users u
-        JOIN users r ON r.sponsor_id = u.id
-        WHERE u.id = ?
+          c.id,
+          c.amount as baseAmount,
+          c.generation,
+          c.created_at as date,
+          u.username as fromUser,
+          t.title as trainingName
+        FROM commissions c
+        JOIN users u ON c.from_user_id = u.id
+        JOIN trainings t ON c.training_id = t.id
+        WHERE c.user_id = ? AND c.status = 'completed'
+        ORDER BY c.created_at DESC
+      `, [decoded.userId]);
 
-        UNION ALL
-
-        -- Recursive case: next generations
-        SELECT 
-          t.user_id,
-          r.id as referral_id,
-          t.generation + 1
-        FROM user_tree t
-        JOIN users r ON r.sponsor_id = t.referral_id
-        WHERE t.generation < 6
-      )
-      SELECT 
-        t.generation,
-        tr.id as training_id,
-        tr.title as training_name,
-        tr.price as base_amount,
-        u.username as referral_name,
-        tp.created_at as transaction_date,
-        tp.id as transaction_id
-      FROM user_tree t
-      JOIN users u ON u.id = t.referral_id
-      JOIN training_purchases tp ON tp.user_id = t.referral_id
-      JOIN trainings tr ON tr.id = tp.training_id
-      WHERE tp.status = 'completed'
-      ORDER BY tp.created_at DESC
-    `, [decoded.userId]);
-
-    // Process commissions
-    const processedCommissions = (commissions as any[]).map(comm => {
-      const calculated = calculateCommission(comm.base_amount, comm.generation);
-      return {
-        id: comm.transaction_id,
-        trainingId: comm.training_id,
-        trainingName: comm.training_name,
-        fromUser: comm.referral_name,
-        generation: comm.generation,
-        date: comm.transaction_date,
-        baseAmount: comm.base_amount,
-        ...calculated
-      };
-    });
-
-    // Calculate summary
-    const summary = processedCommissions.reduce((acc: any, curr) => {
-      if (!acc.byGeneration[curr.generation]) {
-        acc.byGeneration[curr.generation] = {
-          count: 0,
-          total: 0,
-          rate: COMMISSION_RATES[curr.generation as keyof typeof COMMISSION_RATES] * 100,
-          isCaritative: curr.generation === 6
+      // Process commissions
+      const processedCommissions = (commissions as any[]).map(comm => {
+        const calculated = calculateCommission(comm.baseAmount, comm.generation);
+        return {
+          ...comm,
+          ...calculated
         };
-      }
+      });
 
-      acc.byGeneration[curr.generation].count++;
-      acc.byGeneration[curr.generation].total += curr.finalAmount;
-      
-      if (!curr.isCaritative) {
-        acc.totalCommissions += curr.amount;
-        acc.totalTVA += curr.tva;
-        acc.totalRetenue += curr.retenueSurce;
-        acc.netAmount += curr.finalAmount;
-      } else {
-        acc.totalCaritative += curr.finalAmount;
-      }
+      // Calculate summary
+      const summary = processedCommissions.reduce((acc: any, curr) => {
+        if (!acc.byGeneration[curr.generation]) {
+          acc.byGeneration[curr.generation] = {
+            count: 0,
+            total: 0,
+            rate: COMMISSION_RATES[curr.generation as keyof typeof COMMISSION_RATES] * 100,
+            isCaritative: curr.generation === 6
+          };
+        }
 
-      return acc;
-    }, {
-      totalCommissions: 0,
-      totalTVA: 0,
-      totalRetenue: 0,
-      netAmount: 0,
-      totalCaritative: 0,
-      byGeneration: {}
-    });
+        acc.byGeneration[curr.generation].count++;
+        acc.byGeneration[curr.generation].total += curr.finalAmount;
+        
+        if (!curr.isCaritative) {
+          acc.totalCommissions += curr.amount;
+          acc.totalTVA += curr.tva;
+          acc.totalRetenue += curr.retenueSurce;
+          acc.netAmount += curr.finalAmount;
+        } else {
+          acc.totalCaritative += curr.finalAmount;
+        }
 
-    return NextResponse.json({
-      commissions: processedCommissions,
-      summary
-    });
+        return acc;
+      }, {
+        totalCommissions: 0,
+        totalTVA: 0,
+        totalRetenue: 0,
+        netAmount: 0,
+        totalCaritative: 0,
+        byGeneration: {}
+      });
+
+      return NextResponse.json({
+        commissions: processedCommissions,
+        summary
+      });
+
+    } catch (err: any) {
+      // En cas d'erreur de table manquante, retourner des données vides
+      console.error('Database error:', err);
+      return NextResponse.json({
+        commissions: [],
+        summary: {
+          totalCommissions: 0,
+          totalTVA: 0,
+          totalRetenue: 0,
+          netAmount: 0,
+          totalCaritative: 0,
+          byGeneration: {}
+        }
+      });
+    }
 
   } catch (error) {
     console.error('Commissions error:', error);
