@@ -17,11 +17,46 @@ interface UserProfile {
   qr_code: string;
 }
 
+interface Commission {
+  id: number;
+  trainingName: string;
+  fromUser: string;
+  generation: number;
+  date: string;
+  baseAmount: number;
+  rate: number;
+  amount: number;
+  tva: number;
+  retenueSurce: number;
+  finalAmount: number;
+  isCaritative: boolean;
+}
+
+interface CommissionSummary {
+  totalCommissions: number;
+  totalTVA: number;
+  totalRetenue: number;
+  netAmount: number;
+  totalCaritative: number;
+  byGeneration: {
+    [key: number]: {
+      count: number;
+      total: number;
+      rate: number;
+      isCaritative: boolean;
+    }
+  };
+}
+
 export default function Profile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const searchParams = useSearchParams();
+
+  const [commissions, setCommissions] = useState<Commission[]>([]);
+  const [summary, setSummary] = useState<CommissionSummary | null>(null);
+  const [loadingCommissions, setLoadingCommissions] = useState(false);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -45,6 +80,35 @@ export default function Profile() {
 
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'commissions') {
+      setLoadingCommissions(true);
+      fetch('/api/commissions')
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            console.error('Error:', data.error);
+          } else {
+            setCommissions(data.commissions || []);
+            setSummary(data.summary || {
+              totalCommissions: 0,
+              totalTVA: 0,
+              totalRetenue: 0,
+              netAmount: 0,
+              totalCaritative: 0,
+              byGeneration: {}
+            });
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching commissions:', err);
+        })
+        .finally(() => {
+          setLoadingCommissions(false);
+        });
+    }
+  }, [activeTab]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -230,10 +294,101 @@ export default function Profile() {
           <div className="profile-section">
             <div className="info-card">
               <h2>Mes Commissions</h2>
-              <p className="empty-state">
-                <i className="bi bi-cash"></i>
-                Aucune commission pour le moment
-              </p>
+              
+              {loadingCommissions ? (
+                <div className="loading-container">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Chargement...</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="commission-summary">
+                  <div className="summary-grid">
+                    <div className="summary-card">
+                      <h4>Total Brut</h4>
+                      <p>{(summary?.totalCommissions || 0).toFixed(3)} TND</p>
+                    </div>
+                    <div className="summary-card">
+                      <h4>TVA (19%)</h4>
+                      <p>{(summary?.totalTVA || 0).toFixed(3)} TND</p>
+                    </div>
+                    <div className="summary-card">
+                      <h4>Retenue (10%)</h4>
+                      <p>{(summary?.totalRetenue || 0).toFixed(3)} TND</p>
+                    </div>
+                    <div className="summary-card total">
+                      <h4>Net à percevoir</h4>
+                      <p>{(summary?.netAmount || 0).toFixed(3)} TND</p>
+                    </div>
+                    {summary?.totalCaritative > 0 && (
+                      <div className="summary-card caritative">
+                        <h4>Dons caritatifs (6ème gén.)</h4>
+                        <p>{summary.totalCaritative.toFixed(3)} TND</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="generation-details">
+                    <h3>Détails par Génération</h3>
+                    <div className="generation-grid">
+                      {summary && Object.entries(summary.byGeneration).map(([gen, data]) => (
+                        <div key={gen} className={`generation-card ${data.isCaritative ? 'caritative' : ''}`}>
+                          <h4>Génération {gen}</h4>
+                          <p>Taux: {data.rate}%</p>
+                          <p>Nombre: {data.count}</p>
+                          <p>Total: {data.total.toFixed(3)} TND</p>
+                          {data.isCaritative && (
+                            <span className="caritative-badge">Caritatif</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="commissions-list">
+                    <h3>Historique des Commissions</h3>
+                    {commissions.length > 0 ? (
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Formation</th>
+                            <th>De</th>
+                            <th>Génération</th>
+                            <th>Montant Base</th>
+                            <th>Taux</th>
+                            <th>Commission</th>
+                            <th>TVA</th>
+                            <th>Retenue</th>
+                            <th>Net</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {commissions.map(comm => (
+                            <tr key={comm.id} className={comm.isCaritative ? 'caritative-row' : ''}>
+                              <td>{new Date(comm.date).toLocaleDateString()}</td>
+                              <td>{comm.trainingName}</td>
+                              <td>{comm.fromUser}</td>
+                              <td>{comm.generation}</td>
+                              <td>{comm.baseAmount.toFixed(3)} TND</td>
+                              <td>{(comm.rate * 100).toFixed(0)}%</td>
+                              <td>{comm.amount.toFixed(3)} TND</td>
+                              <td>{comm.tva.toFixed(3)} TND</td>
+                              <td>{comm.retenueSurce.toFixed(3)} TND</td>
+                              <td>{comm.finalAmount.toFixed(3)} TND</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="empty-state">
+                        <i className="bi bi-cash"></i>
+                        Aucun historique de commission disponible
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

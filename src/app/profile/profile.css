@@ -321,4 +321,98 @@
   background: var(--light-gray);
   padding: 8px 16px;
   border-radius: 5px;
+}
+
+/* Styles pour les commissions */
+.commission-summary {
+  margin-top: 20px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.summary-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-card.total {
+  background: #4CAF50;
+  color: white;
+}
+
+.summary-card.caritative {
+  background: #dc3545;
+  color: white;
+}
+
+.generation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.generation-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.generation-card.caritative {
+  background: #f8d7da;
+  border-color: #f5c2c7;
+}
+
+.caritative-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #dc3545;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.caritative-row {
+  background-color: rgba(248, 215, 218, 0.2);
+}
+
+.commissions-list table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.commissions-list th,
+.commissions-list td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.commissions-list th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .summary-grid,
+  .generation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .commissions-list {
+    overflow-x: auto;
+  }
 } 

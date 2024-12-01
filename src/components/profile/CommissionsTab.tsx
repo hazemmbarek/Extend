@@ -56,7 +56,6 @@ export default function CommissionsTab() {
 
   return (
     <div className="commissions-container">
-      {/* Résumé des commissions */}
       <div className="commission-summary">
         <h3>Résumé des Commissions</h3>
         <div className="summary-grid">
@@ -76,27 +75,31 @@ export default function CommissionsTab() {
             <h4>Net à percevoir</h4>
             <p>{(summary?.netAmount || 0).toFixed(2)}€</p>
           </div>
+          {summary?.totalCaritative > 0 && (
+            <div className="summary-card caritative">
+              <h4>Dons caritatifs (6ème gén.)</h4>
+              <p>{summary.totalCaritative.toFixed(2)}€</p>
+            </div>
+          )}
         </div>
 
-        {/* Détails par génération */}
         <div className="generation-details">
           <h3>Détails par Génération</h3>
           <div className="generation-grid">
-            {summary && Object.entries(summary.byGeneration || {}).map(([gen, data]) => (
-              <div key={gen} className="generation-card">
+            {summary && Object.entries(summary.byGeneration).map(([gen, data]) => (
+              <div key={gen} className={`generation-card ${data.isCaritative ? 'caritative' : ''}`}>
                 <h4>Génération {gen}</h4>
                 <p>Taux: {data.rate}%</p>
                 <p>Nombre: {data.count}</p>
                 <p>Total: {data.total.toFixed(2)}€</p>
+                {data.isCaritative && (
+                  <span className="caritative-badge">Caritatif</span>
+                )}
               </div>
             ))}
-            {(!summary?.byGeneration || Object.keys(summary.byGeneration).length === 0) && (
-              <p className="empty-state">Aucune commission pour le moment</p>
-            )}
           </div>
         </div>
 
-        {/* Liste des commissions */}
         <div className="commissions-list">
           <h3>Historique des Commissions</h3>
           {commissions.length > 0 ? (
@@ -108,6 +111,7 @@ export default function CommissionsTab() {
                   <th>De</th>
                   <th>Génération</th>
                   <th>Montant Base</th>
+                  <th>Taux</th>
                   <th>Commission</th>
                   <th>TVA</th>
                   <th>Retenue</th>
@@ -116,12 +120,13 @@ export default function CommissionsTab() {
               </thead>
               <tbody>
                 {commissions.map(comm => (
-                  <tr key={comm.id}>
+                  <tr key={comm.id} className={comm.isCaritative ? 'caritative-row' : ''}>
                     <td>{new Date(comm.date).toLocaleDateString()}</td>
                     <td>{comm.trainingName}</td>
                     <td>{comm.fromUser}</td>
                     <td>{comm.generation}</td>
                     <td>{comm.baseAmount.toFixed(2)}€</td>
+                    <td>{(comm.rate * 100).toFixed(0)}%</td>
                     <td>{comm.amount.toFixed(2)}€</td>
                     <td>{comm.tva.toFixed(2)}€</td>
                     <td>{comm.retenueSurce.toFixed(2)}€</td>
@@ -209,6 +214,30 @@ export default function CommissionsTab() {
           padding: 20px;
           color: #666;
           font-style: italic;
+        }
+
+        .caritative {
+          background: #f8d7da !important;
+          border-color: #f5c2c7;
+        }
+
+        .caritative-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          background: #dc3545;
+          color: white;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          margin-top: 5px;
+        }
+
+        .caritative-row {
+          background-color: rgba(248, 215, 218, 0.2);
+        }
+
+        .summary-card.caritative {
+          background: #dc3545;
+          color: white;
         }
       `}</style>
     </div>
