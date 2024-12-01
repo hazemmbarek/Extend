@@ -14,6 +14,7 @@ interface UserProfile {
   total_formations: number;
   total_commissions: number;
   profile_picture: string | null;
+  qr_code: string;
 }
 
 export default function Profile() {
@@ -181,6 +182,20 @@ export default function Profile() {
                 <div className="info-item">
                   <label>Membre depuis</label>
                   <p>{new Date(profile.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="qr-code-section">
+                <h3>Code de parrainage QR</h3>
+                <div className="qr-code-container">
+                  <img 
+                    src={profile.qr_code} 
+                    alt="Code QR de parrainage" 
+                    className="qr-code-image"
+                  />
+                  <p className="referral-code-display">
+                    Code: {profile.referral_code}
+                  </p>
                 </div>
               </div>
             </div>

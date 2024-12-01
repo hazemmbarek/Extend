@@ -25,11 +25,8 @@ export async function GET() {
         phone_number,
         referral_code,
         created_at,
-        CASE 
-          WHEN profile_picture IS NOT NULL 
-          THEN CONCAT('data:image/jpeg;base64,', TO_BASE64(profile_picture))
-          ELSE NULL 
-        END as profile_picture
+        qr_code_path,
+        CAST(qr_code_path AS BINARY) as qr_code_binary
       FROM users
       WHERE id = ?
     `, [decoded.userId]);
@@ -43,8 +40,16 @@ export async function GET() {
       );
     }
 
+    // Convert binary QR code to base64
+    let qrCodeBase64 = null;
+    if (user.qr_code_binary) {
+      const buffer = Buffer.from(user.qr_code_binary);
+      qrCodeBase64 = `data:image/png;base64,${buffer.toString('base64')}`;
+    }
+
     return NextResponse.json({
       ...user,
+      qr_code: qrCodeBase64,
       total_formations: 0,
       total_commissions: 0
     });
