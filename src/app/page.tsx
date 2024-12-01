@@ -10,6 +10,7 @@ import { Services } from "../components/sections/Services";
 import { FAQ } from "../components/sections/FAQ";
 import { Testimonials } from "../components/sections/Testimonials";
 import { Team } from "../components/sections/Team";
+import { Partners } from "../components/sections/Partners";
 
 const teamMembers = [
   {
@@ -59,6 +60,7 @@ export default function Home() {
       <Features />
       <AltFeatures />
       <Services />
+      <Partners />
       <FAQ />
       <Testimonials />
       <Team members={teamMembers} />
