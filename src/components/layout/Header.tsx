@@ -2,10 +2,15 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import './Header.css';
+import { useRouter } from 'next/navigation';
 
-export const Header = () => {
+export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     const checkAuth = () => {
@@ -42,6 +47,11 @@ export const Header = () => {
     }
   };
 
+  const handleProfileNavigation = (section: string) => {
+    setShowProfileMenu(false); // Close dropdown
+    router.push(`/profile?tab=${section}`);
+  };
+
   return (
     <header id="header" className="header d-flex align-items-center fixed-top">
       <div className="container-fluid container-xl d-flex align-items-center justify-content-between">
@@ -56,40 +66,61 @@ export const Header = () => {
             <li><Link href="/formations">Formations</Link></li>
             <li><Link href="/referral">Arbre de parrainage</Link></li>
             {isLoggedIn ? (
-              <li>
-                <button 
-                  onClick={handleLogout}
-                  className="btn-login"
-                  disabled={isLoading}
-                  style={{
-                    border: 'none',
-                    background: '#6A1B9A',
-                    cursor: 'pointer',
-                    padding: '8px 20px',
-                    opacity: isLoading ? 0.7 : 1,
-                    color: '#fff',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.3s ease',
-                    borderRadius: '4px',
-                    textDecoration: 'none',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#581583';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = '#6A1B9A';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
-                  <span>{isLoading ? 'Déconnexion...' : 'Déconnexion'}</span>
-                </button>
-              </li>
+              <>
+                <li className="profile-menu-container">
+                  <button 
+                    className="profile-button"
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  >
+                    <i className="bi bi-person-circle"></i>
+                    <span>Mon Profil</span>
+                    <i className={`bi bi-chevron-${showProfileMenu ? 'up' : 'down'}`}></i>
+                  </button>
+                  {showProfileMenu && (
+                    <div className="profile-dropdown">
+                      <div className="dropdown-section">
+                        <button 
+                          onClick={() => handleProfileNavigation('overview')} 
+                          className="dropdown-item"
+                        >
+                          <i className="bi bi-person"></i>
+                          Vue d'ensemble
+                        </button>
+                        <button 
+                          onClick={() => handleProfileNavigation('formations')} 
+                          className="dropdown-item"
+                        >
+                          <i className="bi bi-book"></i>
+                          Mes Formations
+                        </button>
+                        <button 
+                          onClick={() => handleProfileNavigation('commissions')} 
+                          className="dropdown-item"
+                        >
+                          <i className="bi bi-cash"></i>
+                          Mes Commissions
+                        </button>
+                        <button 
+                          onClick={() => handleProfileNavigation('settings')} 
+                          className="dropdown-item"
+                        >
+                          <i className="bi bi-gear"></i>
+                          Paramètres
+                        </button>
+                        <div className="dropdown-divider"></div>
+                        <button 
+                          onClick={handleLogout}
+                          className="dropdown-item text-danger"
+                          disabled={isLoading}
+                        >
+                          <i className="bi bi-box-arrow-right"></i>
+                          {isLoading ? 'Déconnexion...' : 'Déconnexion'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              </>
             ) : (
               <>
                 <li>
@@ -110,4 +141,4 @@ export const Header = () => {
       </div>
     </header>
   );
-}; 
+} 
