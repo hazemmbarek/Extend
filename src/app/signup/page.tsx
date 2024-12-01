@@ -223,6 +223,10 @@ export default function SignUp() {
             type="submit" 
             className="btn-register"
             disabled={isLoading || !formData.terms}
+            style={{
+              color: '#fff',  // Ensure white text
+              opacity: (isLoading || !formData.terms) ? 0.7 : 1
+            }}
           >
             {isLoading ? 'Inscription...' : 'S\'inscrire'}
           </button>

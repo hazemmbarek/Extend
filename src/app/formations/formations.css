@@ -1,0 +1,213 @@
+:root {
+  --primary-color: #6A1B9A;
+  --white-color: #FFFFFF;
+  --light-gray: #F5F5F5;
+  --shadow: rgba(106, 27, 154, 0.1);
+  --transition: all 0.3s ease;
+  --text-color: #333333;
+}
+
+.formations-header {
+  background: linear-gradient(rgba(106, 27, 154, 0.8), rgba(106, 27, 154, 0.9)), url('/assets/img/formations-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding: 100px 0 60px;
+  color: var(--white-color);
+  text-align: center;
+  margin-bottom: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.formations-header::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: var(--white-color);
+  transform: skewY(-2deg);
+  z-index: 1;
+}
+
+.formations-header h1 {
+  color: var(--white-color);
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.formations-filters {
+  background-color: var(--white-color);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 25px var(--shadow);
+}
+
+.filter-button {
+  background: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 8px 20px;
+  margin: 5px;
+  border-radius: 5px;
+  transition: var(--transition);
+}
+
+.filter-button:hover,
+.filter-button.active {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+.formation-card {
+  background: var(--white-color);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 25px var(--shadow);
+  margin-bottom: 30px;
+  transition: var(--transition);
+}
+
+.formation-card:hover {
+  transform: translateY(-5px);
+}
+
+.formation-img {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.formation-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--primary-color);
+  color: var(--white-color);
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.formation-content {
+  padding: 20px;
+}
+
+.formation-category {
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.formation-content h3 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.formation-details ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.formation-details li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.formation-details i {
+  margin-right: 10px;
+  color: var(--primary-color);
+}
+
+.formation-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 1px solid var(--light-gray);
+}
+
+.price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.btn-details {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  padding: 8px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.btn-details:hover {
+  background-color: #581583;
+  color: var(--white-color);
+}
+
+.formations-section {
+  padding-top: 50px;
+  background-color: var(--white-color);
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .formations-header h1 {
+    font-size: 2rem;
+  }
+  
+  .formations-filters {
+    padding: 15px;
+  }
+  
+  .filter-button {
+    padding: 6px 15px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Styles pour la pagination */
+.pagination-container {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primary-color);
+  background: transparent;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 5px;
+}
+
+.pagination-button:hover:not(:disabled),
+.pagination-button.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+} 
