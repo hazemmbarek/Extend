@@ -4,7 +4,7 @@ import { initDB } from '@/lib/db';
 import jwt from 'jsonwebtoken';
 
 // Define public routes that don't require authentication
-const publicRoutes = ['/', '/login', '/register', '/signup', '/profile'];
+const publicRoutes = ['/', '/login', '/register', '/signup', '/profile','/signin'];
 
 export async function middleware(request: NextRequest) {
   const isPublicRoute = publicRoutes.some(route => 
