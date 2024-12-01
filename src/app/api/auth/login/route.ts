@@ -53,8 +53,9 @@ export async function POST(request: Request) {
     response.cookies.set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 86400 // 24 hours
+      sameSite: 'lax',
+      maxAge: 86400, // 24 hours
+      path: '/' // Make sure to set the path
     });
 
     // Set profile creation token if coming from signup
