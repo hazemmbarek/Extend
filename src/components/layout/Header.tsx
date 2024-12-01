@@ -2,58 +2,43 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export const Header = () => {
-  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
-      try {
-        // Get all cookies and parse them
-        const cookies = document.cookie
-          .split(';')
-          .reduce((acc: { [key: string]: string }, cookie) => {
-            const [key, value] = cookie.trim().split('=');
-            acc[key] = value;
-            return acc;
-          }, {});
-
-        // Check specifically for auth_token
-        const hasAuthToken = 'auth_token' in cookies;
-        console.log('Auth check:', { cookies, hasAuthToken });
-        
-        setIsLoggedIn(hasAuthToken);
-      } catch (error) {
-        console.error('Error checking auth:', error);
-        setIsLoggedIn(false);
-      }
+      const authToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth_token='));
+      
+      console.log('Auth token found:', authToken);
+      setIsLoggedIn(!!authToken);
     };
 
-    // Check immediately
     checkAuth();
-
-    // Set up interval for periodic checks
     const interval = setInterval(checkAuth, 1000);
-
-    // Clean up
     return () => clearInterval(interval);
   }, []);
 
-  const handleSignOut = async () => {
+  const handleLogout = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
+        credentials: 'include',
       });
 
       if (response.ok) {
+        document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
         setIsLoggedIn(false);
-        // Force a page reload to clear all states
         window.location.href = '/';
       }
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,11 +58,36 @@ export const Header = () => {
             {isLoggedIn ? (
               <li>
                 <button 
-                  onClick={handleSignOut} 
+                  onClick={handleLogout}
                   className="btn-login"
-                  style={{ border: 'none', background: 'none', cursor: 'pointer' }}
+                  disabled={isLoading}
+                  style={{
+                    border: 'none',
+                    background: '#6A1B9A',
+                    cursor: 'pointer',
+                    padding: '8px 20px',
+                    opacity: isLoading ? 0.7 : 1,
+                    color: '#fff',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.3s ease',
+                    borderRadius: '4px',
+                    textDecoration: 'none',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#581583';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = '#6A1B9A';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
-                  <span>Déconnexion</span>
+                  <span>{isLoading ? 'Déconnexion...' : 'Déconnexion'}</span>
                 </button>
               </li>
             ) : (

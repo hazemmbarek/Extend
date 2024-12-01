@@ -29,45 +29,30 @@ export async function POST(request: Request) {
     // Create JWT token
     const token = jwt.sign(
       { 
-        userId: user.user_id,
+        userId: user.id,
         email: user.email,
         username: user.username
       },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET!,
       { expiresIn: '24h' }
     );
 
-    // Set HTTP-only cookie
+    // Create response
     const response = NextResponse.json(
-      { 
-        message: 'Login successful',
-        user: {
-          id: user.user_id,
-          email: user.email,
-          username: user.username
-        }
-      },
+      { message: 'Login successful' },
       { status: 200 }
     );
 
-    response.cookies.set('auth_token', token, {
-      httpOnly: true,
+    // Set cookie with specific options
+    response.cookies.set({
+      name: 'auth_token',
+      value: token,
+      httpOnly: false, // Changed to false so JS can read it
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 86400, // 24 hours
-      path: '/' // Make sure to set the path
+      path: '/',
+      maxAge: 60 * 60 * 24 // 24 hours
     });
-
-    // Set profile creation token if coming from signup
-    const isFromSignup = request.headers.get('X-From-Signup') === 'true';
-    if (isFromSignup) {
-      response.cookies.set('profile_creation_token', 'true', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 300 // 5 minutes
-      });
-    }
 
     return response;
 

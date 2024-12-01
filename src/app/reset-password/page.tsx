@@ -71,11 +71,6 @@ export default function ResetPassword() {
 
   return (
     <div className="signin-layout">
-      <Link href="/" className="back-to-home">
-        <i className="bi bi-arrow-left"></i>
-        Retour à l'accueil
-      </Link>
-
       <div className="login-container">
         <div className="login-header">
           <Image 

@@ -5,9 +5,5 @@ export default function ResetPasswordLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="signin-layout">
-      {children}
-    </div>
-  );
+  return children;
 } 
