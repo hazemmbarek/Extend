@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import './Header.css';
 import { useRouter } from 'next/navigation';
+import SponsorshipTree from '../SponsorshipTree';
 
 export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -64,7 +65,9 @@ export default function Header() {
           <ul>
             <li><Link href="/" className="active">Accueil</Link></li>
             <li><Link href="/formations">Formations</Link></li>
-            <li><Link href="/referral">Arbre de parrainage</Link></li>
+            <li>
+              <Link href="/sponsorship-tree">Arbre de parrainage</Link>
+            </li>
             {isLoggedIn ? (
               <>
                 <li className="profile-menu-container">
