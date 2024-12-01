@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Paiements - EXTEND</title>
+  <meta name="description" content="Système de paiement EXTEND">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #6A1B9A;
+      --white-color: #FFFFFF;
+      --light-gray: #F5F5F5;
+      --shadow: rgba(106, 27, 154, 0.1);
+      --transition: all 0.3s ease;
+      --text-color: #333333;
+    }
+
+    /* Copier tout le CSS de base de index.html */
+    /* Correction des couleurs des icônes et titres */
+    .bi {
+      color: var(--primary-color) !important;
+    }
+
+    /* Correction des liens et textes */
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    /* ... (copier tout le CSS de base de index.html) ... */
+
+    /* Styles spécifiques à la page paiements */
+    .paiements-header {
+      background: linear-gradient(rgba(106, 27, 154, 0.8), rgba(106, 27, 154, 0.9)), url('assets/img/payment-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      padding: 100px 0 60px;
+      color: var(--white-color);
+      text-align: center;
+      margin-bottom: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .paiements-header::before {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 100px;
+      background: var(--white-color);
+      transform: skewY(-2deg);
+      z-index: 1;
+    }
+
+    .paiements-header .container {
+      position: relative;
+      z-index: 2;
+    }
+
+    .paiements-header h1 {
+      color: var(--white-color);
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .paiements-header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 800px;
+      margin: 0 auto;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Section des méthodes de paiement */
+    .payment-methods {
+      padding: 50px 0;
+      background-color: var(--white-color);
+      position: relative;
+      z-index: 2;
+    }
+
+    .payment-card {
+      background: var(--white-color);
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 25px var(--shadow);
+      transition: var(--transition);
+    }
+
+    .payment-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .payment-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+    }
+
+    .payment-title {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+    }
+
+    .payment-description {
+      color: var(--text-color);
+      margin-bottom: 20px;
+    }
+
+    .payment-steps {
+      list-style: none;
+      padding: 0;
+    }
+
+    .payment-steps li {
+      margin-bottom: 10px;
+      padding-left: 25px;
+      position: relative;
+    }
+
+    .payment-steps li:before {
+      content: "✓";
+      color: var(--primary-color);
+      position: absolute;
+      left: 0;
+    }
+
+    .btn-payment {
+      background-color: var(--primary-color);
+      color: var(--white-color);
+      padding: 10px 25px;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: var(--transition);
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+    .btn-payment:hover {
+      background-color: #581583;
+      color: var(--white-color);
+    }
+
+    /* Section FAQ */
+    .payment-faq {
+      background-color: var(--light-gray);
+      padding: 50px 0;
+    }
+
+    .faq-item {
+      background: var(--white-color);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 25px var(--shadow);
+    }
+
+    .faq-question {
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+
+    /* Style spécifique pour les boutons de navigation */
+    .navmenu .btn-login,
+    .navmenu .btn-register {
+      padding: 10px 30px;
+      margin: 0 8px;
+      border-radius: 0;
+      transform: skew(-10deg);
+      font-weight: 600;
+      display: inline-block;
+      text-align: center;
+      min-width: 150px;
+      height: 45px;
+      font-size: 1.1rem;
+    }
+
+    /* Le texte reste droit même si le bouton est incliné */
+    .navmenu .btn-login span,
+    .navmenu .btn-register span {
+      display: inline-block;
+      transform: skew(10deg);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) skew(10deg);
+      width: 100%;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+
+    .navmenu .btn-login {
+      background-color: var(--primary-color);
+      color: var(--white-color) !important;
+      border: none;
+    }
+
+    .navmenu .btn-register {
+      background-color: transparent;
+      color: var(--primary-color) !important;
+      border: 1px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* Ajustement de la taille sur mobile */
+    @media (max-width: 768px) {
+      .navmenu .btn-login,
+      .navmenu .btn-register {
+        width: 100%;
+        min-width: 200px;
+        margin: 5px 0;
+      }
+    }
+
+    /* Header */
+    .header {
+      background-color: var(--white-color);
+      box-shadow: 0 2px 10px var(--shadow);
+    }
+
+    .header .sitename {
+      color: var(--primary-color) !important;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    /* Navigation */
+    .navmenu a {
+      color: var(--text-color);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+      padding: 8px 15px;
+      position: relative;
+    }
+
+    .navmenu a:hover,
+    .navmenu .active {
+      color: var(--primary-color) !important;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: var(--light-gray);
+      padding: 60px 0 30px;
+    }
+
+    .footer-links a {
+      color: var(--text-color);
+      text-decoration: none;
+      transition: var(--transition);
+      display: block;
+      padding: 5px 0;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary-color) !important;
+      padding-left: 10px;
+    }
+
+    .footer h4,
+    .footer-about h4 {
+      color: var(--primary-color) !important;
+    }
+
+    .footer-contact strong {
+      color: var(--primary-color);
+    }
+
+    .social-links a {
+      background-color: var(--primary-color);
+      color: var(--white-color) !important;
+    }
+
+    .social-links a:hover {
+      background-color: var(--light-gray);
+      color: var(--primary-color) !important;
+    }
+
+    .copyright {
+      color: var(--text-color);
+    }
+
+    .copyright .sitename {
+      color: var(--primary-color) !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center">
+      <a href="index.html" class="logo d-flex align-items-center me-auto">
+        <img src="assets/img/logo2.png" alt="">
+        <h1 class="sitename">Extend</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="formations.html">Formations</a></li>
+          <li><a href="#contact">Arbre de parrainage</a></li>
+          <li><a href="login.html" class="btn-login"><span>Connexion</span></a></li>
+          <li><a href="register.html" class="btn-register"><span>Inscription</span></a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Paiements Header -->
+  <section class="paiements-header">
+    <div class="container">
+      <h1>Méthodes de Paiement</h1>
+   
+    </div>
+  </section>
+
+  <!-- Méthodes de Paiement -->
+  <section class="payment-methods">
+    <div class="container">
+      <div class="row">
+        <!-- D17 -->
+        <div class="col-lg-4 col-md-6">
+          <div class="payment-card text-center">
+            <img src="assets/img/pai1.webp" alt="D17" class="payment-icon">
+            <h3 class="payment-title">D17</h3>
+            <p class="payment-description">Solution de paiement mobile tunisienne rapide et sécurisée</p>
+            <ul class="payment-steps">
+              <li>Scannez le QR code</li>
+              <li>Confirmez le montant</li>
+              <li>Validez avec votre code PIN</li>
+            </ul>
+            <a href="#" class="btn-payment">Payer avec D17</a>
+          </div>
+        </div>
+
+        <!-- Flousi -->
+        <div class="col-lg-4 col-md-6">
+          <div class="payment-card text-center">
+            <img src="assets/img/pai2.webp" alt="FlouciTn" class="payment-icon">
+            <h3 class="payment-title">FlouciTn</h3>
+            <p class="payment-description">Paiement électronique sécurisé via votre compte FlouciTn</p>
+            <ul class="payment-steps">
+              <li>Connectez-vous à votre compte</li>
+              <li>Vérifiez les détails</li>
+              <li>Confirmez le paiement</li>
+            </ul>
+            <a href="#" class="btn-payment">Payer avec FlouciTn</a>
+          </div>
+        </div>
+
+        <!-- Carte bancaire -->
+        <div class="col-lg-4 col-md-6">
+          <div class="payment-card text-center">
+            <img src="assets/img/pai3.webp" alt="Carte Bancaire" class="payment-icon">
+            <h3 class="payment-title">Carte Bancaire</h3>
+            <p class="payment-description">Paiement sécurisé par carte VISA ou MasterCard</p>
+            <ul class="payment-steps">
+              <li>Entrez vos informations</li>
+              <li>Vérification 3D Secure</li>
+              <li>Confirmation instantanée</li>
+            </ul>
+            <a href="#" class="btn-payment">Payer par Carte</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="payment-faq">
+    <div class="container">
+      <h2 class="text-center mb-5">Questions Fréquentes sur les Paiements</h2>
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="faq-item">
+            <h4 class="faq-question">Quels sont les frais de transaction ?</h4>
+            <p>Les frais varient selon la méthode de paiement choisie. D17 et FlouciTn : 2%, Carte bancaire : 3%.</p>
+          </div>
+          <div class="faq-item">
+            <h4 class="faq-question">Combien de temps pour recevoir mes commissions ?</h4>
+            <p>Les commissions sont versées automatiquement chaque fin de mois, avec un délai de traitement de 2-3 jours ouvrables.</p>
+          </div>
+          <div class="faq-item">
+            <h4 class="faq-question">Les paiements sont-ils sécurisés ?</h4>
+            <p>Oui, toutes nos transactions sont protégées par un cryptage SSL et respectent les normes de sécurité bancaires.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="footer" class="footer">
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="index.html" class="d-flex align-items-center">
+            <span class="sitename">EXTEND</span>
+          </a>
+          <div class="footer-contact pt-3">
+            <p>Tunisie</p>
+            <p class="mt-3">
+              <strong>Téléphone:</strong> <span>+216 42 200 300</span>
+            </p>
+            <p>
+              <strong>Email:</strong> <span>contact@lecoach.tn</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Liens Utiles</h4>
+          <ul>
+            <li><i class="bi bi-chevron-right"></i> <a href="#hero">Accueil</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#about">À propos</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#features">Fonctionnalités</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Nos Services</h4>
+          <ul>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Gestion MLM</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Formations</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Commissions</a></li>
+            <li><i class="bi bi-chevron-right"></i> <a href="#">Support</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+          <h4>Suivez-nous</h4>
+          <p>Restez connecté avec EXTEND pour ne rien manquer de nos actualités et opportunités</p>
+          <div class="social-links d-flex">
+            <a href=""><i class="bi bi-twitter-x"></i></a>
+            <a href=""><i class="bi bi-facebook"></i></a>
+            <a href=""><i class="bi bi-instagram"></i></a>
+            <a href=""><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">EXTEND</strong> <span>Tous droits réservés</span></p>
+      <div class="credits">
+        Développé par <a href="mailto:contact@lecoach.tn">Fady Hamza</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+
+  <!-- Main JS File -->
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html> 

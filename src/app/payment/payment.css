@@ -1,0 +1,321 @@
+:root {
+  --primary-color: #6A1B9A;
+  --white-color: #FFFFFF;
+  --light-gray: #F5F5F5;
+  --shadow: rgba(106, 27, 154, 0.1);
+  --transition: all 0.3s ease;
+  --text-color: #333333;
+}
+
+.paiements-header {
+  background: linear-gradient(rgba(106, 27, 154, 0.8), rgba(106, 27, 154, 0.9)), url('/assets/img/payment-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding: 150px 0 100px;
+  color: var(--white-color);
+  text-align: center;
+  margin-bottom: 0;
+  position: relative;
+  overflow: hidden;
+  margin-top: 72px;
+}
+
+.paiements-header::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: var(--white-color);
+  transform: skewY(-2deg);
+  z-index: 1;
+}
+
+.paiements-header .container {
+  position: relative;
+  z-index: 2;
+}
+
+.paiements-header h1 {
+  color: var(--white-color);
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: 'League Spartan', sans-serif;
+  letter-spacing: -0.5px;
+}
+
+@media (max-width: 768px) {
+  .paiements-header {
+    padding: 120px 0 80px;
+  }
+  
+  .paiements-header h1 {
+    font-size: 2.5rem;
+  }
+}
+
+/* Payment Methods Section */
+.payment-methods {
+  padding: 50px 0;
+  background-color: var(--white-color);
+  position: relative;
+  z-index: 2;
+}
+
+.payment-card {
+  background: var(--white-color);
+  border-radius: 10px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 25px var(--shadow);
+  transition: var(--transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.payment-card:hover {
+  transform: translateY(-5px);
+}
+
+.payment-icon {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 30px;
+  object-fit: contain;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.payment-title {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.payment-description {
+  color: var(--text-color);
+  margin-bottom: 20px;
+}
+
+.payment-steps {
+  list-style: none;
+  padding: 0;
+  flex-grow: 1;
+  margin-bottom: 20px;
+}
+
+.payment-steps li {
+  margin-bottom: 10px;
+  padding-left: 25px;
+  position: relative;
+}
+
+.payment-steps li:before {
+  content: "✓";
+  color: var(--primary-color);
+  position: absolute;
+  left: 0;
+}
+
+.btn-payment {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  padding: 10px 25px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: var(--transition);
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.btn-payment:hover {
+  background-color: #581583;
+  color: var(--white-color);
+}
+
+.btn-payment:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: #cccccc;
+}
+
+/* FAQ Section */
+.payment-faq {
+  background-color: var(--light-gray);
+  padding: 50px 0;
+}
+
+.faq-item {
+  background: var(--white-color);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 5px 25px var(--shadow);
+}
+
+.faq-question {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+/* Update the container of the cards */
+.payment-methods .col-lg-4 {
+  display: flex;
+  margin-bottom: 30px;
+}
+
+/* Adjust the content spacing */
+.payment-card .payment-steps {
+  flex-grow: 1;
+  margin-bottom: 20px;
+}
+
+/* Add these styles to your existing CSS */
+.payment-form {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 4px;
+  background: #f8f9fa;
+}
+
+.payment-error {
+  color: #dc3545;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.StripeElement {
+  padding: 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  background: white;
+  margin-bottom: 16px;
+}
+
+.StripeElement--focus {
+  border-color: #6A1B9A;
+}
+
+.StripeElement--invalid {
+  border-color: #dc3545;
+}
+  
+/* Add these styles to your existing CSS */
+.payment-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .payment-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: #424770;
+    font-weight: 500;
+  }
+  
+  .payment-form {
+    margin-top: 20px;
+  }
+  
+  .payment-error {
+    color: #dc3545;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  
+  .StripeElement {
+    padding: 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    background: white;
+    margin-bottom: 16px;
+  }
+  
+  .StripeElement--focus {
+    border-color: #6A1B9A;
+    box-shadow: 0 1px 3px 0 #cfd7df;
+  }
+  
+  .StripeElement--invalid {
+    border-color: #dc3545;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-bottom: 16px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .form-control:focus {
+    outline: none;
+    border-color: #6A1B9A;
+    box-shadow: 0 1px 3px 0 #cfd7df;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #424770;
+    font-weight: 500;
+  }
+  
+  .payment-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .payment-modal-content h2 {
+    color: #6A1B9A;
+    margin-bottom: 24px;
+    text-align: center;
+  }
