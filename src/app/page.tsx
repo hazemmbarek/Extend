@@ -11,6 +11,44 @@ import { FAQ } from "../components/sections/FAQ";
 import { Testimonials } from "../components/sections/Testimonials";
 import { Team } from "../components/sections/Team";
 
+const teamMembers = [
+  {
+    name: "Hazem Mbarek",
+    image: "/assets/img/default-avatar.png",
+    socials: {
+      linkedin: "https://www.linkedin.com/in/hazem-mbarek-108280291/",
+    }
+  },
+  {
+    name: "Nour Chokri",
+    image: "/assets/img/default-avatar.png",
+    socials: {
+      linkedin: "https://www.linkedin.com/in/nour-chokri-37100b32b/",
+    }
+  },
+  {
+    name: "Yassine Dridi",
+    image: "/assets/img/default-avatar.png",
+    socials: {
+      linkedin: "",
+    }
+  },
+  {
+    name: "Mohamed Aziz Masmoudi",
+    image: "/assets/img/default-avatar.png",
+    socials: {
+      linkedin: "https://www.linkedin.com/in/mohamed-aziz-masmoudi-238495265/",
+    }
+  },
+  {
+    name: "Asma Ben Elkadhi",
+    image: "/assets/img/default-avatar.png",
+    socials: {
+      linkedin: "",
+    }
+  }
+];
+
 export default function Home() {
   return (
     <>
@@ -23,7 +61,7 @@ export default function Home() {
       <Services />
       <FAQ />
       <Testimonials />
-      <Team />
+      <Team members={teamMembers} />
     </>
   );
 }
