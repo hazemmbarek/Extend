@@ -3,6 +3,49 @@
 import { useEffect, useState } from 'react';
 import SponsorshipTree from '@/components/SponsorshipTree';
 
+const TreeLegend = () => (
+  <div className="tree-legend">
+    <h3>Légende</h3>
+    <div className="legend-items">
+      {[0, 1, 2, 3, 4, 5].map(level => (
+        <div key={level} className="legend-item">
+          <span className={`legend-dot level-${level}`}></span>
+          <span>Niveau {level}</span>
+        </div>
+      ))}
+    </div>
+    <style jsx>{`
+      .tree-legend {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+      .legend-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .legend-dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+      }
+      .level-0 { background: #4CAF50; }
+      .level-1 { background: #2196F3; }
+      .level-2 { background: #9C27B0; }
+      .level-3 { background: #FF9800; }
+      .level-4 { background: #F44336; }
+      .level-5 { background: #795548; }
+    `}</style>
+  </div>
+);
+
 export default function SponsorshipTreePage() {
   const [treeData, setTreeData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +72,8 @@ export default function SponsorshipTreePage() {
           <h2>Arbre de Parrainage</h2>
           <p>Visualisez votre réseau de parrainage sur 5 niveaux</p>
         </div>
+
+        <TreeLegend />
 
         <div className="tree-container">
           {isLoading ? (
