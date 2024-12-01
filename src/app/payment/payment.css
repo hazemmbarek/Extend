@@ -319,3 +319,29 @@
     margin-bottom: 24px;
     text-align: center;
   }
+
+.payment-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  margin-top: 20px;
+}
+
+.payment-info h2 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.payment-info .price {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+  margin: 10px 0;
+}
+
+.payment-info p {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 5px 0;
+}

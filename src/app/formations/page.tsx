@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import './formations.css';
+import { useRouter } from 'next/navigation';
 
 interface Formation {
   id: number;
@@ -22,11 +23,15 @@ interface Formation {
 }
 
 export default function Formations() {
+  const router = useRouter();
   const [formations, setFormations] = useState<Formation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const formationsPerPage = 6;
+  const [selectedFormation, setSelectedFormation] = useState<Formation | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchFormations = async () => {
@@ -74,24 +79,70 @@ export default function Formations() {
     });
   };
 
-  // Get current formations
+  // Fonction de filtrage combinée (recherche + catégorie)
+  const getFilteredFormations = () => {
+    return formations.filter(formation => {
+      const matchesSearch = formation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          formation.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = activeFilter === 'all' || formation.category === activeFilter;
+      return matchesSearch && matchesCategory;
+    });
+  };
+
+  // Get current formations avec recherche
+  const filteredFormations = getFilteredFormations();
   const indexOfLastFormation = currentPage * formationsPerPage;
   const indexOfFirstFormation = indexOfLastFormation - formationsPerPage;
-  const currentFormations = formations.slice(indexOfFirstFormation, indexOfLastFormation);
+  const currentFormations = filteredFormations.slice(indexOfFirstFormation, indexOfLastFormation);
+  const totalPages = Math.ceil(filteredFormations.length / formationsPerPage);
 
   // Change page
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  // Calculate total pages
-  const totalPages = Math.ceil(formations.length / formationsPerPage);
+  const handleViewDetails = (formation: Formation) => {
+    setSelectedFormation(formation);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedFormation(null);
+  };
+
+  const handlePaymentRedirect = (formation: Formation) => {
+    // Stocker les infos de la formation dans sessionStorage
+    sessionStorage.setItem('paymentInfo', JSON.stringify({
+      formationId: formation.id,
+      title: formation.title,
+      price: formation.price,
+      category: formation.category,
+      duration: formation.duration_hours
+    }));
+    
+    // Fermer la modal et rediriger
+    closeModal();
+    router.push('/payment');
+  };
 
   return (
     <>
       <section className="formations-header">
         <div className="container">
           <h1>Catalogue des Formations</h1>
-          <br />
-          <br />
+          {/* Barre de recherche */}
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Rechercher une formation..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1); // Réinitialiser la pagination lors d'une recherche
+              }}
+              className="search-input"
+            />
+            <i className="bi bi-search search-icon"></i>
+          </div>
         </div>
       </section>
 
@@ -162,9 +213,12 @@ export default function Formations() {
                       </div>
                       <div className="formation-footer">
                         <div className="price">{formation.price} DT</div>
-                        <Link href={`/formations/${formation.id}`} className="btn-details">
+                        <button 
+                          onClick={() => handleViewDetails(formation)}
+                          className="btn-details"
+                        >
                           Voir le détail
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -207,6 +261,62 @@ export default function Formations() {
           )}
         </div>
       </section>
+
+      {/* Modal des détails */}
+      {showModal && selectedFormation && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>×</button>
+            
+            <div className="modal-header">
+              <h2>{selectedFormation.title}</h2>
+              <div className="formation-category">
+                {selectedFormation.category === 'CAT1' ? 'Développement Personnel' :
+                 selectedFormation.category === 'CAT2' ? 'Leadership' : 'Vente'}
+              </div>
+            </div>
+
+            <div className="modal-body">
+              <div className="formation-image">
+                <img 
+                  src={selectedFormation.category === 'CAT1' ? '/assets/img/form4.png' : 
+                       selectedFormation.category === 'CAT2' ? '/assets/img/form5.jpg' : 
+                       '/assets/img/form6.jpg'}
+                  alt={selectedFormation.title}
+                  style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+                />
+              </div>
+
+              <div className="formation-info">
+                <h3>Description</h3>
+                <p>{selectedFormation.description}</p>
+
+                <div className="formation-details mt-4">
+                  <h3>Détails de la formation</h3>
+                  <ul>
+                    <li><i className="bi bi-clock"></i> Durée: {selectedFormation.duration_hours}h</li>
+                    <li><i className="bi bi-person-check"></i> Participants: {selectedFormation.current_participants}/{selectedFormation.max_participants}</li>
+                    <li><i className="bi bi-calendar"></i> Début: {new Date(selectedFormation.start_date).toLocaleDateString()}</li>
+                    <li><i className="bi bi-calendar-check"></i> Fin: {new Date(selectedFormation.end_date).toLocaleDateString()}</li>
+                    <li><i className="bi bi-geo-alt"></i> Lieu: {selectedFormation.location}</li>
+                    <li><i className="bi bi-mortarboard"></i> Niveau: {selectedFormation.level}</li>
+                  </ul>
+                </div>
+
+                <div className="modal-footer">
+                  <div className="price-large">{selectedFormation.price} DT</div>
+                  <button 
+                    className="btn-register"
+                    onClick={() => handlePaymentRedirect(selectedFormation)}
+                  >
+                    S'inscrire maintenant
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 } 
