@@ -33,7 +33,7 @@ async function generateQRCode(referralCode: string): Promise<Buffer> {
 
 export async function POST(request: Request) {
   try {
-    const { username, email, password, phone_number, sponsor_id } = await request.json();
+    const { username, email, password, phone_number, referral_code } = await request.json();
 
     // Validate required fields
     if (!username || !email || !password || !phone_number) {
@@ -58,11 +58,29 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate referral code
-    const referralCode = generateReferralCode();
+    // Verify referral code exists if provided
+    let sponsor_id = null;
+    if (referral_code) {
+      const [sponsors] = await pool.execute(
+        'SELECT id FROM users WHERE referral_code = ?',
+        [referral_code]
+      );
+
+      if ((sponsors as any[]).length === 0) {
+        return NextResponse.json(
+          { error: 'Code de parrainage invalide' },
+          { status: 400 }
+        );
+      }
+      
+      sponsor_id = (sponsors as any[])[0].id;
+    }
+
+    // Generate new user's own referral code
+    const newReferralCode = generateReferralCode();
 
     // Generate QR code
-    const qrCodeBuffer = await generateQRCode(referralCode);
+    const qrCodeBuffer = await generateQRCode(newReferralCode);
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -90,31 +108,22 @@ export async function POST(request: Request) {
           email,
           hashedPassword,
           phone_number,
-          sponsor_id || null,
-          referralCode,
+          sponsor_id,
+          newReferralCode,
           qrCodeBuffer
         ]
       );
 
-      // Get the inserted user ID
       const userId = (result as any).insertId;
 
-      // If sponsor exists, update their referral count
-      if (sponsor_id) {
-        await connection.execute(
-          'UPDATE users SET referral_count = referral_count + 1 WHERE id = ?',
-          [sponsor_id]
-        );
-      }
-
+      // No need to update referral_count anymore since we're using referral_code
       await connection.commit();
 
-      // Return success response with referral info
       return NextResponse.json({
         message: 'User registered successfully',
         userId,
-        referralCode,
-        referralUrl: `${process.env.NEXT_PUBLIC_APP_URL}/signup?ref=${referralCode}`
+        referralCode: newReferralCode,
+        referralUrl: `${process.env.NEXT_PUBLIC_APP_URL}/signup?ref=${newReferralCode}`
       });
 
     } catch (error) {

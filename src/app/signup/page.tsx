@@ -10,7 +10,7 @@ interface FormData {
   email: string;
   password: string;
   phone_number: string;
-  sponsor_id?: string;
+  referral_code?: string;
   confirm_password: string;
   terms: boolean;
 }
@@ -22,7 +22,7 @@ export default function SignUp() {
     email: '',
     password: '',
     phone_number: '',
-    sponsor_id: '',
+    referral_code: '',
     confirm_password: '',
     terms: false
   });
@@ -60,7 +60,7 @@ export default function SignUp() {
           email: formData.email,
           password: formData.password,
           phone_number: formData.phone_number,
-          sponsor_id: formData.sponsor_id ? parseInt(formData.sponsor_id) : null
+          referral_code: formData.referral_code
         }),
       });
 
@@ -153,15 +153,15 @@ export default function SignUp() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="sponsor_id">ID de Parrainage (optionnel)</label>
+            <label htmlFor="referral_code">Code de Parrainage (optionnel)</label>
             <input 
               type="text" 
               className="form-control" 
-              id="sponsor_id" 
-              name="sponsor_id"
-              value={formData.sponsor_id}
+              id="referral_code" 
+              name="referral_code"
+              value={formData.referral_code}
               onChange={handleChange}
-              placeholder="ID de votre parrain"
+              placeholder="Code de parrainage"
               disabled={isLoading}
             />
           </div>
