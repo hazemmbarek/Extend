@@ -30,7 +30,7 @@ export default function SponsorshipTree({ data }: Props) {
   const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
 
   const margin = { 
-    top: 400,
+    top: 100,
     right: 120,
     bottom: 20,
     left: 300
@@ -117,7 +117,7 @@ export default function SponsorshipTree({ data }: Props) {
     };
   };
 
-  const height = 800 - margin.top - margin.bottom;
+  const height = 500 - margin.top - margin.bottom;
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
@@ -347,9 +347,9 @@ export default function SponsorshipTree({ data }: Props) {
       <style jsx>{`
         .sponsorship-tree-container {
           width: 100%;
+          min-height: calc(100vh - 300px);
+          background: linear-gradient(135deg, #f6f4ff 0%, #f1f1f9 100%);
           padding: 2rem;
-          background: #f8f9fa;
-          min-height: calc(100vh - 64px);
         }
 
         .content-wrapper {
@@ -357,17 +357,15 @@ export default function SponsorshipTree({ data }: Props) {
           margin: 0 auto;
           background: white;
           border-radius: 16px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 20px rgba(106, 27, 154, 0.08);
           overflow: hidden;
+          border: 1px solid rgba(106, 27, 154, 0.1);
         }
 
         .tree-header {
-          display: flex;
-          justify-content: flex-end;
-          align-items: center;
-          padding: 2rem;
-          background: white;
-          border-bottom: 1px solid #e5e7eb;
+          background: #fcfaff;
+          border-bottom: 1px solid rgba(106, 27, 154, 0.1);
+          padding: 1.5rem 2rem;
         }
 
         .tree-controls {
@@ -380,35 +378,36 @@ export default function SponsorshipTree({ data }: Props) {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          padding: 0.75rem 1.5rem;
+          padding: 0.75rem 1.25rem;
           border: 1px solid #e5e7eb;
           border-radius: 8px;
           background: white;
-          color: #374151;
+          color: #6A1B9A;
           font-size: 0.875rem;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.2s ease;
+          box-shadow: 0 1px 2px rgba(106, 27, 154, 0.05);
         }
 
         .reset-button:hover {
-          background: #f3f4f6;
-          border-color: #d1d5db;
+          background: #f9f5ff;
+          border-color: #6A1B9A;
           transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(106, 27, 154, 0.1);
         }
 
         .reset-button svg {
-          width: 16px;
-          height: 16px;
+          stroke: #6A1B9A;
         }
 
         .filter-buttons {
           display: flex;
-          gap: 1rem;
+          gap: 0.75rem;
         }
 
         .filter-button {
-          padding: 0.75rem 1.5rem;
+          padding: 0.75rem 1.25rem;
           border: 1px solid #e5e7eb;
           border-radius: 8px;
           background: white;
@@ -417,12 +416,15 @@ export default function SponsorshipTree({ data }: Props) {
           font-weight: 500;
           cursor: pointer;
           transition: all 0.2s ease;
+          box-shadow: 0 1px 2px rgba(106, 27, 154, 0.05);
         }
 
         .filter-button:hover {
-          background: #f3f4f6;
-          border-color: #d1d5db;
+          background: #f9f5ff;
+          border-color: #6A1B9A;
+          color: #6A1B9A;
           transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(106, 27, 154, 0.1);
         }
 
         .filter-button.active {
@@ -435,9 +437,9 @@ export default function SponsorshipTree({ data }: Props) {
         .sponsorship-tree {
           width: 100%;
           overflow: auto;
-          padding: 3rem;
+          padding: 2rem;
           background: white;
-          min-height: calc(100vh - 200px);
+          min-height: 500px;
         }
 
         @media (max-width: 768px) {
@@ -446,33 +448,31 @@ export default function SponsorshipTree({ data }: Props) {
           }
 
           .tree-header {
-            flex-direction: column;
-            gap: 1.5rem;
-            align-items: flex-start;
-            padding: 1.5rem;
+            padding: 1rem;
           }
 
           .tree-controls {
-            width: 100%;
             flex-direction: column;
             gap: 1rem;
           }
 
-          .reset-button {
+          .reset-button,
+          .filter-buttons {
             width: 100%;
+          }
+
+          .reset-button {
             justify-content: center;
           }
 
           .filter-buttons {
-            width: 100%;
-            justify-content: flex-start;
             flex-wrap: wrap;
           }
 
           .filter-button {
             flex: 1;
             text-align: center;
-            min-width: 120px;
+            min-width: 100px;
           }
         }
       `}</style>
