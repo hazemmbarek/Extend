@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import type { ZoomBehavior } from 'd3';
 
 interface TreeNode {
   id: number;
@@ -23,8 +24,17 @@ interface FilterOption {
 
 export default function SponsorshipTree({ data }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
+
+  const margin = { 
+    top: 400,
+    right: 120,
+    bottom: 20,
+    left: 300
+  };
 
   const filterOptions: FilterOption[] = [
     { label: 'Tous', value: 'all' },
@@ -107,6 +117,8 @@ export default function SponsorshipTree({ data }: Props) {
     };
   };
 
+  const height = 800 - margin.top - margin.bottom;
+
   useEffect(() => {
     if (!data || !svgRef.current) return;
 
@@ -122,14 +134,7 @@ export default function SponsorshipTree({ data }: Props) {
 
     d3.select(svgRef.current).selectAll("*").remove();
 
-    const margin = { 
-      top: 400,
-      right: 120,
-      bottom: 20,
-      left: 300
-    };
     const width = 1500 - margin.left - margin.right;
-    const height = 800 - margin.top - margin.bottom;
 
     const svg = d3.select(svgRef.current)
       .attr("width", width + margin.left + margin.right)
@@ -142,20 +147,13 @@ export default function SponsorshipTree({ data }: Props) {
       });
 
     svg.call(zoom);
+    zoomRef.current = zoom;
 
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
     const levelSpacing = width / 5;
     const nodeOffset = levelSpacing / 2;
-    const levels = [
-      { level: 0, title: "Vous", description: "Racine", commission: "" },
-      { level: 1, title: "Niveau 1", description: "Parrainages directs", commission: "20% commission" },
-      { level: 2, title: "Niveau 2", description: "Parrainages indirects", commission: "15% commission" },
-      { level: 3, title: "Niveau 3", description: "Réseau étendu", commission: "10% commission" },
-      { level: 4, title: "Niveau 4", description: "Réseau élargi", commission: "5% commission" },
-      { level: 5, title: "Niveau 5", description: "Réseau global", commission: "2.5% commission" }
-    ];
 
     const treeLayout = d3.tree<TreeNode>()
       .size([height - 100, width])
@@ -169,47 +167,6 @@ export default function SponsorshipTree({ data }: Props) {
       d.y = (d.data.level * levelSpacing) + nodeOffset;
     });
 
-    levels.forEach((levelInfo, i) => {
-      const x = i * levelSpacing;
-
-      g.append("line")
-        .attr("x1", x)
-        .attr("x2", x)
-        .attr("y1", -280)
-        .attr("y2", height)
-        .style("stroke", "#e0e0e0")
-        .style("stroke-dasharray", "5,5");
-
-      const textX = x + nodeOffset;
-
-      g.append("text")
-        .attr("x", textX)
-        .attr("y", -260)
-        .attr("text-anchor", "middle")
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .style("fill", getNodeColor(levelInfo.level))
-        .text(levelInfo.title);
-
-      g.append("text")
-        .attr("x", textX)
-        .attr("y", -240)
-        .attr("text-anchor", "middle")
-        .style("font-size", "12px")
-        .style("fill", "#666")
-        .text(levelInfo.description);
-
-      if (levelInfo.commission) {
-        g.append("text")
-          .attr("x", textX)
-          .attr("y", -220)
-          .attr("text-anchor", "middle")
-          .style("font-size", "12px")
-          .style("fill", "#4CAF50")
-          .text(levelInfo.commission);
-      }
-    });
-
     const links = g.selectAll(".link")
       .data(treeData.links())
       .enter()
@@ -219,7 +176,7 @@ export default function SponsorshipTree({ data }: Props) {
         .x(d => d.y)
         .y(d => d.x))
       .style("fill", "none")
-      .style("stroke", "#ccc")
+      .style("stroke", "#e5e7eb")
       .style("stroke-width", "2px");
 
     const nodes = g.selectAll(".node")
@@ -269,6 +226,56 @@ export default function SponsorshipTree({ data }: Props) {
       .style("fill", d => d.data.isActive ? "#4CAF50" : "#ff0000")
       .text(d => d.data.isActive ? "Actif" : "Inactif");
 
+    const levels = [
+      { level: 0, title: "Vous", description: "Racine", commission: "" },
+      { level: 1, title: "Niveau 1", description: "Parrainages directs", commission: "20% commission" },
+      { level: 2, title: "Niveau 2", description: "Parrainages indirects", commission: "15% commission" },
+      { level: 3, title: "Niveau 3", description: "Réseau étendu", commission: "10% commission" },
+      { level: 4, title: "Niveau 4", description: "Réseau élargi", commission: "5% commission" },
+      { level: 5, title: "Niveau 5", description: "Réseau global", commission: "2.5% commission" }
+    ];
+
+    levels.forEach((levelInfo, i) => {
+      const x = i * levelSpacing;
+
+      g.append("line")
+        .attr("x1", x)
+        .attr("x2", x)
+        .attr("y1", -280)
+        .attr("y2", height)
+        .style("stroke", "#e0e0e0")
+        .style("stroke-dasharray", "5,5");
+
+      const textX = x + nodeOffset;
+
+      g.append("text")
+        .attr("x", textX)
+        .attr("y", -260)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("fill", getNodeColor(levelInfo.level))
+        .text(levelInfo.title);
+
+      g.append("text")
+        .attr("x", textX)
+        .attr("y", -240)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .style("fill", "#666")
+        .text(levelInfo.description);
+
+      if (levelInfo.commission) {
+        g.append("text")
+          .attr("x", textX)
+          .attr("y", -220)
+          .attr("text-anchor", "middle")
+          .style("font-size", "12px")
+          .style("fill", "#4CAF50")
+          .text(levelInfo.commission);
+      }
+    });
+
   }, [data, selectedLevel, filterStatus]);
 
   const getNodeColor = (level: number): string => {
@@ -283,38 +290,116 @@ export default function SponsorshipTree({ data }: Props) {
     return colors[level as keyof typeof colors] || colors[0];
   };
 
+  const resetView = () => {
+    if (!svgRef.current || !zoomRef.current) return;
+    
+    // Get the root node position
+    const rootNode = d3.select(svgRef.current)
+      .select('.node.level-0');
+    
+    if (!rootNode.empty()) {
+      const transform = d3.zoomIdentity
+        .translate(
+          margin.left + 100, // Add some offset for better visibility
+          height / 2
+        )
+        .scale(1);
+
+      d3.select(svgRef.current)
+        .transition()
+        .duration(750)
+        .call(zoomRef.current.transform, transform);
+    }
+  };
+
   return (
     <div className="sponsorship-tree-container">
-      <div className="tree-filters">
-        <div className="filter-buttons">
-          {filterOptions.map(option => (
+      <div className="content-wrapper">
+        <div className="tree-header">
+          <div className="tree-controls">
             <button
-              key={option.value}
-              onClick={() => setFilterStatus(option.value)}
-              className={`filter-button ${filterStatus === option.value ? 'active' : ''}`}
+              onClick={resetView}
+              className="reset-button"
             >
-              {option.label}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              Retour à la racine
             </button>
-          ))}
+            <div className="filter-buttons">
+              {filterOptions.map(option => (
+                <button
+                  key={option.value}
+                  onClick={() => setFilterStatus(option.value)}
+                  className={`filter-button ${filterStatus === option.value ? 'active' : ''}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="sponsorship-tree">
-        <svg ref={svgRef}></svg>
+        <div className="sponsorship-tree">
+          <svg ref={svgRef}></svg>
+        </div>
       </div>
       <style jsx>{`
         .sponsorship-tree-container {
           width: 100%;
+          padding: 2rem;
+          background: #f8f9fa;
+          min-height: calc(100vh - 64px);
         }
 
-        .tree-filters {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin-bottom: 2rem;
-          padding: 1rem;
+        .content-wrapper {
+          max-width: 1800px;
+          margin: 0 auto;
           background: white;
+          border-radius: 16px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          overflow: hidden;
+        }
+
+        .tree-header {
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          padding: 2rem;
+          background: white;
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tree-controls {
+          display: flex;
+          align-items: center;
+          gap: 2rem;
+        }
+
+        .reset-button {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.5rem;
+          border: 1px solid #e5e7eb;
           border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          background: white;
+          color: #374151;
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .reset-button:hover {
+          background: #f3f4f6;
+          border-color: #d1d5db;
+          transform: translateY(-1px);
+        }
+
+        .reset-button svg {
+          width: 16px;
+          height: 16px;
         }
 
         .filter-buttons {
@@ -324,31 +409,71 @@ export default function SponsorshipTree({ data }: Props) {
 
         .filter-button {
           padding: 0.75rem 1.5rem;
-          border: none;
-          border-radius: 4px;
-          background: #f5f5f5;
-          color: #666;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          background: white;
+          color: #374151;
+          font-size: 0.875rem;
+          font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
         }
 
         .filter-button:hover {
-          background: #e0e0e0;
+          background: #f3f4f6;
+          border-color: #d1d5db;
+          transform: translateY(-1px);
         }
 
         .filter-button.active {
           background: #6A1B9A;
+          border-color: #6A1B9A;
           color: white;
+          box-shadow: 0 2px 4px rgba(106, 27, 154, 0.2);
         }
 
         .sponsorship-tree {
           width: 100%;
           overflow: auto;
+          padding: 3rem;
           background: white;
-          padding: 5rem;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          margin-top: 5rem;
+          min-height: calc(100vh - 200px);
+        }
+
+        @media (max-width: 768px) {
+          .sponsorship-tree-container {
+            padding: 1rem;
+          }
+
+          .tree-header {
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: flex-start;
+            padding: 1.5rem;
+          }
+
+          .tree-controls {
+            width: 100%;
+            flex-direction: column;
+            gap: 1rem;
+          }
+
+          .reset-button {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .filter-buttons {
+            width: 100%;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+          }
+
+          .filter-button {
+            flex: 1;
+            text-align: center;
+            min-width: 120px;
+          }
         }
       `}</style>
     </div>
