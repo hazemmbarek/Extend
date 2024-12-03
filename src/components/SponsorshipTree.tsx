@@ -25,7 +25,6 @@ export default function SponsorshipTree({ data }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const filterOptions: FilterOption[] = [
     { label: 'Tous', value: 'all' },
@@ -38,69 +37,73 @@ export default function SponsorshipTree({ data }: Props) {
     if (node.level === 0) {
       return {
         ...node,
-        children: node.children
-          .map(child => {
-            // Only filter this specific node by status
-            if (filterStatus === 'active' && !child.isActive) return null;
-            if (filterStatus === 'inactive' && child.isActive) return null;
+        children: node.children.reduce<TreeNode[]>((acc, child) => {
+          // For inactive nodes, directly add their filtered children to the accumulator
+          if (filterStatus === 'active' && !child.isActive) {
+            const validGrandChildren = child.children
+              .filter(grandChild => grandChild.isActive)
+              .map(grandChild => ({
+                ...grandChild,
+                level: grandChild.level
+              }));
+            
+            acc.push(...validGrandChildren);
+            return acc;
+          }
 
-            // Apply search filter
-            if (searchTerm && !child.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-              return null;
-            }
+          // For active or all nodes, process normally
+          if (filterStatus === 'inactive' && child.isActive) return acc;
 
-            // Always process children, regardless of parent's status
-            const filteredChildren = child.children
-              .map(grandChild => {
-                // Each child is filtered independently
-                if (filterStatus === 'active' && !grandChild.isActive) return null;
-                if (filterStatus === 'inactive' && grandChild.isActive) return null;
-                
-                if (searchTerm && !grandChild.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-                  return null;
-                }
+          const filteredChildren = child.children.reduce<TreeNode[]>((childAcc, grandChild) => {
+            if (filterStatus === 'active' && !grandChild.isActive) return childAcc;
+            if (filterStatus === 'inactive' && grandChild.isActive) return childAcc;
+            
+            childAcc.push({
+              ...grandChild,
+              level: grandChild.level,
+              children: grandChild.children
+            });
+            return childAcc;
+          }, []);
 
-                return {
-                  ...grandChild,
-                  children: grandChild.children
-                };
-              })
-              .filter((gc): gc is TreeNode => gc !== null);
-
-            return {
-              ...child,
-              children: filteredChildren
-            };
-          })
-          .filter((child): child is TreeNode => child !== null)
+          acc.push({
+            ...child,
+            level: child.level,
+            children: filteredChildren
+          });
+          return acc;
+        }, [])
       };
     }
 
-    // For non-root nodes, filter individually
-    if (filterStatus === 'active' && !node.isActive) return null;
-    if (filterStatus === 'inactive' && node.isActive) return null;
-
-    if (searchTerm && !node.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return null;
+    // For non-root nodes
+    if (filterStatus === 'active' && !node.isActive) {
+      // If node is inactive, return its active children directly
+      return {
+        ...node,
+        children: node.children
+          .filter(child => child.isActive)
+          .map(child => ({
+            ...child,
+            level: child.level
+          }))
+      };
     }
+
+    if (filterStatus === 'inactive' && node.isActive) return null;
 
     return {
       ...node,
       children: node.children
-        .map(child => {
-          if (filterStatus === 'active' && !child.isActive) return null;
-          if (filterStatus === 'inactive' && child.isActive) return null;
-
-          if (searchTerm && !child.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-            return null;
-          }
-
-          return {
-            ...child,
-            children: child.children
-          };
+        .filter(child => {
+          if (filterStatus === 'active') return child.isActive;
+          if (filterStatus === 'inactive') return !child.isActive;
+          return true;
         })
-        .filter((child): child is TreeNode => child !== null)
+        .map(child => ({
+          ...child,
+          level: child.level
+        }))
     };
   };
 
@@ -163,7 +166,7 @@ export default function SponsorshipTree({ data }: Props) {
     const treeData = treeLayout(root);
 
     treeData.descendants().forEach(d => {
-      d.y = (d.depth * levelSpacing) + nodeOffset;
+      d.y = (d.data.level * levelSpacing) + nodeOffset;
     });
 
     levels.forEach((levelInfo, i) => {
@@ -266,7 +269,7 @@ export default function SponsorshipTree({ data }: Props) {
       .style("fill", d => d.data.isActive ? "#4CAF50" : "#ff0000")
       .text(d => d.data.isActive ? "Actif" : "Inactif");
 
-  }, [data, selectedLevel, filterStatus, searchTerm]);
+  }, [data, selectedLevel, filterStatus]);
 
   const getNodeColor = (level: number): string => {
     const colors = {
@@ -283,15 +286,6 @@ export default function SponsorshipTree({ data }: Props) {
   return (
     <div className="sponsorship-tree-container">
       <div className="tree-filters">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Rechercher un membre..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
         <div className="filter-buttons">
           {filterOptions.map(option => (
             <button
@@ -314,26 +308,13 @@ export default function SponsorshipTree({ data }: Props) {
 
         .tree-filters {
           display: flex;
-          justify-content: space-between;
+          justify-content: center;
           align-items: center;
           margin-bottom: 2rem;
           padding: 1rem;
           background: white;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .search-box {
-          flex: 1;
-          max-width: 300px;
-        }
-
-        .search-input {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          font-size: 14px;
         }
 
         .filter-buttons {
