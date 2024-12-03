@@ -9,6 +9,9 @@ interface TreeNode {
   children: TreeNode[];
   level: number;
   isActive: boolean;
+  referralCode: string;
+  totalSponsored: number;
+  joinedDate: string;
 }
 
 export async function GET() {
@@ -26,29 +29,33 @@ export async function GET() {
     const decoded = jwt.verify(authToken, process.env.JWT_SECRET!) as { userId: number };
     const pool = initDB();
 
-    // Get 5 levels of sponsorship tree
+    // Updated query to include more user details
     const [rows] = await pool.query(`
       WITH RECURSIVE sponsorship_cte AS (
-        -- Base case: start with the current user
         SELECT 
           u.id,
           u.username,
+          u.referral_code,
+          u.created_at,
           st.sponsor_id,
           0 as level,
-          CASE WHEN u.status = 'active' THEN true ELSE false END as isActive
+          CASE WHEN u.status = 'active' THEN true ELSE false END as isActive,
+          (SELECT COUNT(*) FROM sponsorship_tree WHERE sponsor_id = u.id) as total_sponsored
         FROM users u
         LEFT JOIN sponsorship_tree st ON u.id = st.user_id
         WHERE u.id = ?
 
         UNION ALL
 
-        -- Recursive case: get sponsored users up to 5 levels
         SELECT 
           u.id,
           u.username,
+          u.referral_code,
+          u.created_at,
           st.sponsor_id,
           sc.level + 1,
-          CASE WHEN u.status = 'active' THEN true ELSE false END as isActive
+          CASE WHEN u.status = 'active' THEN true ELSE false END as isActive,
+          (SELECT COUNT(*) FROM sponsorship_tree WHERE sponsor_id = u.id) as total_sponsored
         FROM users u
         JOIN sponsorship_tree st ON u.id = st.user_id
         JOIN sponsorship_cte sc ON st.sponsor_id = sc.id
@@ -58,7 +65,7 @@ export async function GET() {
       ORDER BY level, id;
     `, [decoded.userId]);
 
-    // Convert flat data to hierarchical structure
+    // Enhanced buildTree function with additional data
     const buildTree = (nodes: any[], parentId: number | null = null, level: number = 0): TreeNode[] => {
       return nodes
         .filter(node => node.sponsor_id === parentId && node.level === level)
@@ -67,6 +74,9 @@ export async function GET() {
           name: node.username,
           level: node.level,
           isActive: node.isActive,
+          referralCode: node.referral_code,
+          totalSponsored: node.total_sponsored,
+          joinedDate: new Date(node.created_at).toLocaleDateString('fr-FR'),
           children: buildTree(nodes, node.id, level + 1)
         }));
     };
