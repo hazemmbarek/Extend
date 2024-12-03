@@ -43,29 +43,6 @@
   display: block;
 }
 
-.edit-avatar-btn {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 1;
-}
-
-.edit-avatar-btn:hover {
-  transform: scale(1.1);
-  background: #581583;
-}
-
 .profile-info {
   padding: 90px 50px 30px;
 }

@@ -8,6 +8,7 @@ import CommissionsTab from '@/components/profile/CommissionsTab';
 import FormationsTab from '@/components/profile/FormationsTab';
 import { FormationsProvider } from '@/contexts/FormationsContext';
 import DeleteAccountModal from '@/components/profile/DeleteAccountModal';
+import UpdateProfileModal from '@/components/profile/UpdateProfileModal';
 
 interface UserProfile {
   username: string;
@@ -63,6 +64,7 @@ export default function Profile() {
   const [summary, setSummary] = useState<CommissionSummary | null>(null);
   const [loadingCommissions, setLoadingCommissions] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -121,27 +123,65 @@ export default function Profile() {
     if (!file) return;
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        // Refresh profile data to get new image
-        const profileResponse = await fetch('/api/profile');
-        const data = await profileResponse.json();
-        setProfile(data);
-      }
+      await handleProfileUpdate(profile?.phone_number || '', file);
     } catch (error) {
       console.error('Error updating profile picture:', error);
+      alert('Failed to update profile picture');
     }
   };
 
   const handlePasswordChange = () => {
     router.push('/forgot-password');
+  };
+
+  const handleProfileUpdate = async (phone: string, image: File | null) => {
+    try {
+      let newProfilePicture = profile?.profile_picture;
+
+      // Handle image upload first if there's a new image
+      if (image) {
+        const formData = new FormData();
+        formData.append('file', image);
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const uploadData = await uploadResponse.json();
+        newProfilePicture = uploadData.url;
+      }
+
+      // Update profile data
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone_number: phone,
+          profile_picture: newProfilePicture,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const updatedProfile = await response.json();
+      setProfile(updatedProfile);
+
+      // Show success message (you can add a toast notification here)
+      alert('Profile updated successfully');
+
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
   };
 
   if (loading) {
@@ -172,16 +212,6 @@ export default function Profile() {
                 }}
               />
             </div>
-            <label htmlFor="avatar-upload" className="edit-avatar-btn">
-              <i className="bi bi-pencil-fill"></i>
-            </label>
-            <input
-              type="file"
-              id="avatar-upload"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              style={{ display: 'none' }}
-            />
           </div>
         </div>
         <div className="profile-info">
@@ -319,7 +349,10 @@ export default function Profile() {
                   <i className="bi bi-shield-lock"></i>
                   Changer le mot de passe
                 </button>
-                <button className="settings-btn">
+                <button 
+                  className="settings-btn"
+                  onClick={() => setIsUpdateModalOpen(true)}
+                >
                   <i className="bi bi-person-gear"></i>
                   Modifier le profil
                 </button>
@@ -339,6 +372,14 @@ export default function Profile() {
       <DeleteAccountModal 
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
+      />
+
+      <UpdateProfileModal 
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        currentPhone={profile?.phone_number || ''}
+        currentImage={profile?.profile_picture || '/assets/img/default-avatar.png'}
+        onUpdate={handleProfileUpdate}
       />
 
       <style jsx>{`

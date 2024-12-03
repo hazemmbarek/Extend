@@ -1,9 +1,23 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
-import { initDB } from '@/lib/db';
-import path from 'path';
-import fs from 'fs';
+import { createPool } from 'mysql2/promise';
+import sharp from 'sharp';
+
+// Create a dedicated connection pool for file uploads
+const uploadPool = createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  maxIdle: 10,
+  idleTimeout: 60000,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0
+});
 
 export async function POST(request: Request) {
   try {
@@ -28,38 +42,40 @@ export async function POST(request: Request) {
       );
     }
 
-    // Créer le dossier d'upload s'il n'existe pas
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'users');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    // Générer un nom de fichier unique
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `user-${decoded.userId}-${Date.now()}.${fileExtension}`;
-    const filePath = path.join(uploadDir, fileName);
-
-    // Convertir le fichier en buffer et le sauvegarder
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    fs.writeFileSync(filePath, buffer);
 
-    // Sauvegarder le chemin dans la base de données
-    const pool = initDB();
-    await pool.query(
+    // Resize and compress image
+    const processedImageBuffer = await sharp(buffer)
+      .resize(300, 300, {
+        fit: 'cover',
+        position: 'center'
+      })
+      .jpeg({
+        quality: 80,
+        progressive: true
+      })
+      .toBuffer();
+
+    // Use the dedicated pool for the upload
+    const [result] = await uploadPool.execute(
       'UPDATE users SET profile_picture = ? WHERE id = ?',
-      [fileName, decoded.userId]
+      [processedImageBuffer, decoded.userId]
     );
 
-    return NextResponse.json({ 
-      message: 'Profile picture updated successfully',
-      profile_picture: `/uploads/users/${fileName}`
+    // Convert to base64 for response
+    const base64Image = `data:image/jpeg;base64,${processedImageBuffer.toString('base64')}`;
+
+    return NextResponse.json({
+      message: 'File uploaded successfully',
+      url: base64Image
     });
 
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Une erreur est survenue' },
+      { error: 'Une erreur est survenue lors du téléchargement' },
       { status: 500 }
     );
   }
