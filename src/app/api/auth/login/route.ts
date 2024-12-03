@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   const pool = initDB();
   
   try {
-    const { email, password } = await request.json();
+    const { email, password, rememberMe } = await request.json();
 
     const [rows] = await pool.query(
       'SELECT * FROM extend.users WHERE email = ?',
@@ -26,6 +26,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
 
+    // Set expiration based on rememberMe
+    const expiresIn = rememberMe ? '30d' : '24h';
+
     // Create JWT token
     const token = jwt.sign(
       { 
@@ -34,7 +37,7 @@ export async function POST(request: Request) {
         username: user.username
       },
       process.env.JWT_SECRET!,
-      { expiresIn: '24h' }
+      { expiresIn }
     );
 
     // Create response
@@ -43,15 +46,16 @@ export async function POST(request: Request) {
       { status: 200 }
     );
 
-    // Set cookie with specific options
+    // Set cookie with expiration based on rememberMe
     response.cookies.set({
       name: 'auth_token',
       value: token,
-      httpOnly: false, // Changed to false so JS can read it
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 // 24 hours
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : undefined, // 30 days if rememberMe, otherwise session cookie
+      expires: rememberMe ? new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) : undefined // 30 days if rememberMe
     });
 
     return response;

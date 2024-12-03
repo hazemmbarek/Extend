@@ -15,6 +15,73 @@ interface FormData {
   terms: boolean;
 }
 
+// Add password validation function (same as backend)
+function validatePassword(password: string): { isValid: boolean; message: string } {
+  if (password.length < 8) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins 8 caractères'
+    };
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins une lettre majuscule'
+    };
+  }
+
+  if (!/[a-z]/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins une lettre minuscule'
+    };
+  }
+
+  if (!/\d/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins un chiffre'
+    };
+  }
+
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*(),.?":{}|<>)'
+    };
+  }
+
+  return { isValid: true, message: '' };
+}
+
+// Add this function at the top with other functions
+function getPasswordStrength(password: string): { strength: number; label: string; color: string } {
+  let strength = 0;
+  
+  // Length check
+  if (password.length >= 8) strength += 20;
+  
+  // Uppercase check
+  if (/[A-Z]/.test(password)) strength += 20;
+  
+  // Lowercase check
+  if (/[a-z]/.test(password)) strength += 20;
+  
+  // Number check
+  if (/\d/.test(password)) strength += 20;
+  
+  // Special character check
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 20;
+
+  // Return strength info
+  if (strength === 100) return { strength, label: 'Très fort', color: '#28a745' };
+  if (strength >= 80) return { strength, label: 'Fort', color: '#5cb85c' };
+  if (strength >= 60) return { strength, label: 'Moyen', color: '#f0ad4e' };
+  if (strength >= 40) return { strength, label: 'Faible', color: '#d9534f' };
+  return { strength, label: 'Très faible', color: '#dc3545' };
+}
+
 export default function SignUp() {
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
@@ -28,6 +95,8 @@ export default function SignUp() {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({ isValid: false, message: '' });
+  const [passwordStrength, setPasswordStrength] = useState({ strength: 0, label: '', color: '' });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -35,6 +104,12 @@ export default function SignUp() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+
+    // Validate password when it changes
+    if (name === 'password') {
+      setPasswordValidation(validatePassword(value));
+      setPasswordStrength(getPasswordStrength(value));
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -172,7 +247,7 @@ export default function SignUp() {
                 <label htmlFor="password">Mot de passe</label>
                 <input 
                   type="password" 
-                  className="form-control" 
+                  className={`form-control ${formData.password && !passwordValidation.isValid ? 'is-invalid' : ''}`}
                   id="password" 
                   name="password"
                   value={formData.password}
@@ -181,6 +256,48 @@ export default function SignUp() {
                   placeholder="Créez votre mot de passe"
                   disabled={isLoading}
                 />
+                {formData.password && (
+                  <div className="password-strength-wrapper">
+                    <div className="password-strength-bar">
+                      <div 
+                        className="password-strength-fill"
+                        style={{ 
+                          width: `${passwordStrength.strength}%`,
+                          backgroundColor: passwordStrength.color,
+                          transition: 'all 0.3s ease'
+                        }}
+                      ></div>
+                    </div>
+                    <span className="password-strength-label" style={{ color: passwordStrength.color }}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                )}
+                {formData.password && !passwordValidation.isValid && (
+                  <div className="invalid-feedback">
+                    {passwordValidation.message}
+                  </div>
+                )}
+                <small className="form-text text-muted">
+                  Le mot de passe doit contenir:
+                  <ul className="password-requirements">
+                    <li className={formData.password.length >= 8 ? 'text-success' : ''}>
+                      Au moins 8 caractères
+                    </li>
+                    <li className={/[A-Z]/.test(formData.password) ? 'text-success' : ''}>
+                      Une lettre majuscule
+                    </li>
+                    <li className={/[a-z]/.test(formData.password) ? 'text-success' : ''}>
+                      Une lettre minuscule
+                    </li>
+                    <li className={/\d/.test(formData.password) ? 'text-success' : ''}>
+                      Un chiffre
+                    </li>
+                    <li className={/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-success' : ''}>
+                      Un caractère spécial
+                    </li>
+                  </ul>
+                </small>
               </div>
             </div>
             <div className="col-md-6">

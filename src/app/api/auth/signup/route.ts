@@ -8,6 +8,51 @@ function generateReferralCode(): string {
   return crypto.randomBytes(4).toString('hex').toUpperCase();
 }
 
+// Add password validation function
+function validatePassword(password: string): { isValid: boolean; message: string } {
+  // Minimum length check
+  if (password.length < 8) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins 8 caractères'
+    };
+  }
+
+  // Check for at least one uppercase letter
+  if (!/[A-Z]/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins une lettre majuscule'
+    };
+  }
+
+  // Check for at least one lowercase letter
+  if (!/[a-z]/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins une lettre minuscule'
+    };
+  }
+
+  // Check for at least one number
+  if (!/\d/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins un chiffre'
+    };
+  }
+
+  // Check for at least one special character
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return {
+      isValid: false,
+      message: 'Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*(),.?":{}|<>)'
+    };
+  }
+
+  return { isValid: true, message: '' };
+}
+
 async function generateQRCode(referralCode: string): Promise<Buffer> {
   try {
     // Create the referral URL
@@ -39,6 +84,15 @@ export async function POST(request: Request) {
     if (!username || !email || !password || !phone_number) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return NextResponse.json(
+        { error: passwordValidation.message },
         { status: 400 }
       );
     }
