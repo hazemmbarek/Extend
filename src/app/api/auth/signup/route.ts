@@ -112,34 +112,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify referral code exists if provided
+    // Get sponsor_id from referral_code
     let sponsor_id = null;
     if (referral_code) {
       const [sponsors] = await pool.execute(
         'SELECT id FROM users WHERE referral_code = ?',
         [referral_code]
       );
-
-      if ((sponsors as any[]).length === 0) {
-        return NextResponse.json(
-          { error: 'Code de parrainage invalide' },
-          { status: 400 }
-        );
+      if ((sponsors as any[]).length > 0) {
+        sponsor_id = (sponsors as any[])[0].id;
       }
-      
-      sponsor_id = (sponsors as any[])[0].id;
     }
 
-    // Generate new user's own referral code
+    // Generate new referral code and hash password
     const newReferralCode = generateReferralCode();
-
-    // Generate QR code
+    const hashedPassword = await bcrypt.hash(password, 10);
     const qrCodeBuffer = await generateQRCode(newReferralCode);
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Begin transaction
     const connection = await pool.getConnection();
     await connection.beginTransaction();
 
@@ -170,7 +159,44 @@ export async function POST(request: Request) {
 
       const userId = (result as any).insertId;
 
-      // No need to update referral_count anymore since we're using referral_code
+      // If there's a sponsor, insert into sponsorship_tree
+      if (sponsor_id) {
+        // First get the sponsor's level from sponsorship_tree
+        const [sponsorRows] = await connection.execute(
+          'SELECT level FROM sponsorship_tree WHERE user_id = ?',
+          [sponsor_id]
+        );
+
+        let sponsorLevel = 0;
+        if ((sponsorRows as any[]).length > 0) {
+          sponsorLevel = (sponsorRows as any[])[0].level;
+        }
+
+        // Insert new user into sponsorship_tree
+        await connection.execute(
+          `INSERT INTO sponsorship_tree (
+            user_id,
+            sponsor_id,
+            level
+          ) VALUES (?, ?, ?)`,
+          [
+            userId,
+            sponsor_id,
+            sponsorLevel + 1 // New user's level is sponsor's level + 1
+          ]
+        );
+      } else {
+        // If no sponsor, insert as level 1
+        await connection.execute(
+          `INSERT INTO sponsorship_tree (
+            user_id,
+            sponsor_id,
+            level
+          ) VALUES (?, NULL, 1)`,
+          [userId]
+        );
+      }
+
       await connection.commit();
 
       return NextResponse.json({
