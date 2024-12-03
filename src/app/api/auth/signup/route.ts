@@ -76,6 +76,44 @@ async function generateQRCode(referralCode: string): Promise<Buffer> {
   }
 }
 
+async function buildSponsorshipChain(connection: any, userId: number, directSponsorId: number | null) {
+  if (!directSponsorId) {
+    // If no sponsor, just insert level 1
+    await connection.execute(
+      'INSERT INTO sponsorship_tree (user_id, sponsor_id, level) VALUES (?, NULL, 1)',
+      [userId]
+    );
+    return;
+  }
+
+  // Get sponsor chain up to 5 levels
+  const [sponsorChain] = await connection.execute(`
+    WITH RECURSIVE sponsor_chain AS (
+      -- Base: direct sponsor
+      SELECT id, sponsor_id, 1 as chain_level
+      FROM users
+      WHERE id = ?
+      
+      UNION ALL
+      
+      -- Recursive: get upper sponsors up to level 5
+      SELECT u.id, u.sponsor_id, sc.chain_level + 1
+      FROM users u
+      JOIN sponsor_chain sc ON u.id = sc.sponsor_id
+      WHERE sc.chain_level < 5
+    )
+    SELECT * FROM sponsor_chain;
+  `, [directSponsorId]);
+
+  // Insert relationships for each level
+  for (const sponsor of sponsorChain as any[]) {
+    await connection.execute(
+      'INSERT INTO sponsorship_tree (user_id, sponsor_id, level) VALUES (?, ?, ?)',
+      [userId, sponsor.id, sponsor.chain_level]
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const { username, email, password, phone_number, referral_code } = await request.json();
@@ -159,43 +197,8 @@ export async function POST(request: Request) {
 
       const userId = (result as any).insertId;
 
-      // If there's a sponsor, insert into sponsorship_tree
-      if (sponsor_id) {
-        // First get the sponsor's level from sponsorship_tree
-        const [sponsorRows] = await connection.execute(
-          'SELECT level FROM sponsorship_tree WHERE user_id = ?',
-          [sponsor_id]
-        );
-
-        let sponsorLevel = 0;
-        if ((sponsorRows as any[]).length > 0) {
-          sponsorLevel = (sponsorRows as any[])[0].level;
-        }
-
-        // Insert new user into sponsorship_tree
-        await connection.execute(
-          `INSERT INTO sponsorship_tree (
-            user_id,
-            sponsor_id,
-            level
-          ) VALUES (?, ?, ?)`,
-          [
-            userId,
-            sponsor_id,
-            sponsorLevel + 1 // New user's level is sponsor's level + 1
-          ]
-        );
-      } else {
-        // If no sponsor, insert as level 1
-        await connection.execute(
-          `INSERT INTO sponsorship_tree (
-            user_id,
-            sponsor_id,
-            level
-          ) VALUES (?, NULL, 1)`,
-          [userId]
-        );
-      }
+      // Build the sponsorship tree relationships
+      await buildSponsorshipChain(connection, userId, sponsor_id);
 
       await connection.commit();
 
