@@ -16,12 +16,106 @@ interface Props {
   data: TreeNode;
 }
 
+interface FilterOption {
+  label: string;
+  value: string;
+}
+
 export default function SponsorshipTree({ data }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  const filterOptions: FilterOption[] = [
+    { label: 'Tous', value: 'all' },
+    { label: 'Actifs', value: 'active' },
+    { label: 'Inactifs', value: 'inactive' }
+  ];
+
+  const filterData = (node: TreeNode): TreeNode | null => {
+    // For root node
+    if (node.level === 0) {
+      return {
+        ...node,
+        children: node.children
+          .map(child => {
+            // Only filter this specific node by status
+            if (filterStatus === 'active' && !child.isActive) return null;
+            if (filterStatus === 'inactive' && child.isActive) return null;
+
+            // Apply search filter
+            if (searchTerm && !child.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+              return null;
+            }
+
+            // Always process children, regardless of parent's status
+            const filteredChildren = child.children
+              .map(grandChild => {
+                // Each child is filtered independently
+                if (filterStatus === 'active' && !grandChild.isActive) return null;
+                if (filterStatus === 'inactive' && grandChild.isActive) return null;
+                
+                if (searchTerm && !grandChild.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                  return null;
+                }
+
+                return {
+                  ...grandChild,
+                  children: grandChild.children
+                };
+              })
+              .filter((gc): gc is TreeNode => gc !== null);
+
+            return {
+              ...child,
+              children: filteredChildren
+            };
+          })
+          .filter((child): child is TreeNode => child !== null)
+      };
+    }
+
+    // For non-root nodes, filter individually
+    if (filterStatus === 'active' && !node.isActive) return null;
+    if (filterStatus === 'inactive' && node.isActive) return null;
+
+    if (searchTerm && !node.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return null;
+    }
+
+    return {
+      ...node,
+      children: node.children
+        .map(child => {
+          if (filterStatus === 'active' && !child.isActive) return null;
+          if (filterStatus === 'inactive' && child.isActive) return null;
+
+          if (searchTerm && !child.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+            return null;
+          }
+
+          return {
+            ...child,
+            children: child.children
+          };
+        })
+        .filter((child): child is TreeNode => child !== null)
+    };
+  };
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
+
+    // Apply filters while keeping root node
+    const filteredData = filterData(data);
+
+    // Only proceed if we have data to show
+    if (!filteredData || filteredData.children.length === 0) {
+      // Clear the visualization
+      d3.select(svgRef.current).selectAll("*").remove();
+      return;
+    }
 
     d3.select(svgRef.current).selectAll("*").remove();
 
@@ -64,7 +158,7 @@ export default function SponsorshipTree({ data }: Props) {
       .size([height - 100, width])
       .nodeSize([100, levelSpacing * 1.2]);
 
-    const root = d3.hierarchy(data);
+    const root = d3.hierarchy(filteredData);
 
     const treeData = treeLayout(root);
 
@@ -172,7 +266,7 @@ export default function SponsorshipTree({ data }: Props) {
       .style("fill", d => d.data.isActive ? "#4CAF50" : "#ff0000")
       .text(d => d.data.isActive ? "Actif" : "Inactif");
 
-  }, [data, selectedLevel]);
+  }, [data, selectedLevel, filterStatus, searchTerm]);
 
   const getNodeColor = (level: number): string => {
     const colors = {
@@ -187,9 +281,85 @@ export default function SponsorshipTree({ data }: Props) {
   };
 
   return (
-    <div className="sponsorship-tree">
-      <svg ref={svgRef}></svg>
+    <div className="sponsorship-tree-container">
+      <div className="tree-filters">
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="Rechercher un membre..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        <div className="filter-buttons">
+          {filterOptions.map(option => (
+            <button
+              key={option.value}
+              onClick={() => setFilterStatus(option.value)}
+              className={`filter-button ${filterStatus === option.value ? 'active' : ''}`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="sponsorship-tree">
+        <svg ref={svgRef}></svg>
+      </div>
       <style jsx>{`
+        .sponsorship-tree-container {
+          width: 100%;
+        }
+
+        .tree-filters {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2rem;
+          padding: 1rem;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .search-box {
+          flex: 1;
+          max-width: 300px;
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 0.75rem;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+        }
+
+        .filter-buttons {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .filter-button {
+          padding: 0.75rem 1.5rem;
+          border: none;
+          border-radius: 4px;
+          background: #f5f5f5;
+          color: #666;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .filter-button:hover {
+          background: #e0e0e0;
+        }
+
+        .filter-button.active {
+          background: #6A1B9A;
+          color: white;
+        }
+
         .sponsorship-tree {
           width: 100%;
           overflow: auto;
