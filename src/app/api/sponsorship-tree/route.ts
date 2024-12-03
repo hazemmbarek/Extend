@@ -29,53 +29,43 @@ export async function GET() {
     const decoded = jwt.verify(authToken, process.env.JWT_SECRET!) as { userId: number };
     const pool = initDB();
 
-    // Modified query to get all sponsored users where current user is sponsor
+    // Modified query to follow direct sponsorship chain
     const [rows] = await pool.query(`
-      WITH RECURSIVE user_tree AS (
-        -- Base: get all direct sponsored users
+      WITH RECURSIVE sponsorship_chain AS (
+        -- Get users where the logged-in user is a direct sponsor (level 1)
         SELECT 
           u.id,
           u.username,
           u.referral_code,
           u.created_at,
           st.sponsor_id,
-          st.level,
+          1 as chain_level,
           CASE WHEN u.status = 'active' THEN true ELSE false END as isActive,
-          (SELECT COUNT(*) FROM sponsorship_tree WHERE sponsor_id = u.id) as total_sponsored
+          (SELECT COUNT(*) FROM sponsorship_tree WHERE sponsor_id = u.id AND level = 1) as total_sponsored
         FROM users u
         JOIN sponsorship_tree st ON u.id = st.user_id
-        WHERE st.sponsor_id = ?
+        WHERE st.sponsor_id = ? AND st.level = 1
 
         UNION ALL
 
-        -- Get their sponsored users recursively
+        -- Get users sponsored by the previous level users
         SELECT 
           u.id,
           u.username,
           u.referral_code,
           u.created_at,
           st.sponsor_id,
-          st.level,
+          sc.chain_level + 1,
           CASE WHEN u.status = 'active' THEN true ELSE false END as isActive,
-          (SELECT COUNT(*) FROM sponsorship_tree WHERE sponsor_id = u.id) as total_sponsored
+          (SELECT COUNT(*) FROM sponsorship_tree WHERE sponsor_id = u.id AND level = 1) as total_sponsored
         FROM users u
         JOIN sponsorship_tree st ON u.id = st.user_id
-        JOIN user_tree ut ON st.sponsor_id = ut.id
+        JOIN sponsorship_chain sc ON st.sponsor_id = sc.id
+        WHERE st.level = 1 AND sc.chain_level < 5
       )
-      SELECT 
-        u.id,
-        u.username,
-        u.referral_code,
-        u.created_at,
-        st.sponsor_id,
-        st.level,
-        CASE WHEN u.status = 'active' THEN true ELSE false END as isActive,
-        (SELECT COUNT(*) FROM sponsorship_tree WHERE sponsor_id = u.id) as total_sponsored
-      FROM users u
-      JOIN sponsorship_tree st ON u.id = st.user_id
-      WHERE st.sponsor_id = ?
-      ORDER BY st.level, u.id;
-    `, [decoded.userId, decoded.userId]);
+      SELECT * FROM sponsorship_chain
+      ORDER BY chain_level, id;
+    `, [decoded.userId]);
 
     // Get the current user's info for the root node
     const [rootUser] = await pool.query(`
@@ -97,7 +87,7 @@ export async function GET() {
         .map(node => ({
           id: node.id,
           name: node.username,
-          level: node.level,
+          level: node.chain_level,
           isActive: node.isActive,
           referralCode: node.referral_code,
           totalSponsored: node.total_sponsored,

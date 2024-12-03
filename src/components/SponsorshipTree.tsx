@@ -7,13 +7,16 @@ interface TreeNode {
   children: TreeNode[];
   level: number;
   isActive: boolean;
+  referralCode: string;
+  totalSponsored: number;
+  joinedDate: string;
 }
 
-interface SponsorshipTreeProps {
+interface Props {
   data: TreeNode;
 }
 
-export default function SponsorshipTree({ data }: SponsorshipTreeProps) {
+export default function SponsorshipTree({ data }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
@@ -124,8 +127,8 @@ export default function SponsorshipTree({ data }: SponsorshipTreeProps) {
       .append("path")
       .attr("class", "link")
       .attr("d", d3.linkHorizontal<any, any>()
-        .x((d: any) => d.y)
-        .y((d: any) => d.x))
+        .x(d => d.y)
+        .y(d => d.x))
       .style("fill", "none")
       .style("stroke", "#ccc")
       .style("stroke-width", "2px");
