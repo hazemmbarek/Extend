@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import ReCAPTCHA from "react-google-recaptcha";
 
 interface FormData {
   username: string;
@@ -97,6 +98,7 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState({ isValid: false, message: '' });
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, label: '', color: '' });
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -112,8 +114,18 @@ export default function SignUp() {
     }
   };
 
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    if (!captchaToken) {
+      setError('Veuillez valider le captcha');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
@@ -135,7 +147,8 @@ export default function SignUp() {
           email: formData.email,
           password: formData.password,
           phone_number: formData.phone_number,
-          referral_code: formData.referral_code
+          referral_code: formData.referral_code,
+          captchaToken: captchaToken,
         }),
       });
 
@@ -336,13 +349,20 @@ export default function SignUp() {
             </div>
           </div>
 
+          <div className="form-group d-flex justify-content-center">
+            <ReCAPTCHA
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+              onChange={handleCaptchaChange}
+            />
+          </div>
+
           <button 
             type="submit" 
             className="btn-register"
-            disabled={isLoading || !formData.terms}
+            disabled={isLoading || !captchaToken}
             style={{
               color: '#fff',  // Ensure white text
-              opacity: (isLoading || !formData.terms) ? 0.7 : 1
+              opacity: (isLoading || !captchaToken) ? 0.7 : 1
             }}
           >
             {isLoading ? 'Inscription...' : 'S\'inscrire'}

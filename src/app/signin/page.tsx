@@ -4,8 +4,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function SignIn() {
+  console.log('RECAPTCHA Site Key:', process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY);
+
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
@@ -14,6 +17,7 @@ export default function SignIn() {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -23,8 +27,18 @@ export default function SignIn() {
     }));
   };
 
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    if (!captchaToken) {
+      setError('Veuillez valider le captcha');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
@@ -37,6 +51,7 @@ export default function SignIn() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
+          captchaToken: captchaToken,
         }),
       });
 
@@ -133,10 +148,17 @@ export default function SignIn() {
             </Link>
           </div>
 
+          <div className="form-group d-flex justify-content-center">
+            <ReCAPTCHA
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''}
+              onChange={handleCaptchaChange}
+            />
+          </div>
+
           <button 
             type="submit" 
             className="btn-login"
-            disabled={isLoading}
+            disabled={isLoading || !captchaToken}
           >
             {isLoading ? 'Connexion...' : 'Se connecter'}
           </button>

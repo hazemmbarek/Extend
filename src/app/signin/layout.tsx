@@ -1,3 +1,4 @@
+import Script from 'next/script';
 import './signin.css';
 
 export default function SignInLayout({
@@ -7,6 +8,10 @@ export default function SignInLayout({
 }) {
   return (
     <div className="signin-layout">
+      <Script
+        src="https://www.google.com/recaptcha/api.js"
+        strategy="beforeInteractive"
+      />
       {children}
     </div>
   );
