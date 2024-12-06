@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Header } from "../components/layout/Header";
-import { Footer } from "../components/layout/Footer";
+import Header from "../components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { ScriptProvider } from "../components/providers/ScriptProvider";
+import Script from 'next/script';
 
 // CSS imports
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -33,6 +34,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com" rel="preconnect" />
         <link href="https://fonts.gstatic.com" rel="preconnect" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <Script src="https://d3js.org/d3.v7.min.js" />
       </head>
       <body className="index-page">
         <div id="preloader"></div>

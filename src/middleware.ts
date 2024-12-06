@@ -1,14 +1,29 @@
 import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
-import { initDB } from '@/lib/db';
-import jwt from 'jsonwebtoken';
+import type { NextRequest } from 'next/server';
 
 // Define public routes that don't require authentication
-const publicRoutes = ['/', '/login', '/register', '/signup', '/profile','/signin'];
+const publicRoutes = ['/', '/signin', '/signup', '/forgot-password', '/reset-password'];
+
+// Define static asset paths that should be ignored
+const staticPaths = [
+  '/assets',
+  '/images',
+  '/_next',
+  '/favicon.ico',
+  '/api',
+];
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Skip middleware for static assets
+  if (staticPaths.some(path => pathname.startsWith(path))) {
+    return NextResponse.next();
+  }
+
   const isPublicRoute = publicRoutes.some(route => 
-    request.nextUrl.pathname === route
+    pathname === route || 
+    pathname.startsWith(route + '?')
   );
 
   // Allow access to public routes
@@ -19,60 +34,64 @@ export async function middleware(request: NextRequest) {
   try {
     // Check for auth token
     const authToken = request.cookies.get('auth_token');
-    const profileToken = request.cookies.get('profile_creation_token');
-    const isEditing = request.nextUrl.searchParams.get('edit') === 'true';
 
-    // If no token found, redirect to login
+    // If no token found, redirect to signin
     if (!authToken) {
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('from', request.nextUrl.pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // For the profile creation page specifically
-    if (request.nextUrl.pathname === '/profile') {
-      // Decode token to get user ID
-      const decoded = jwt.verify(authToken.value, process.env.JWT_SECRET!) as { userId: string };
-      const userId = decoded.userId;
-
-      // Check if profile exists
-      const pool = await initDB();
-      const [rows] = await pool.execute(
-        'SELECT id_profile FROM profiles WHERE id_user = ?',
-        [userId]
-      );
-      const profiles = rows as any[];
-
-      // Allow access if editing or if it's a new profile with token
-      if (profiles.length > 0 && !isEditing) {
-        return NextResponse.redirect(new URL('/profile/view', request.url));
-      }
-      
-      // Require profile_creation_token for new profile creation
-      if (!profiles.length && !profileToken) {
-        return NextResponse.redirect(new URL('/', request.url));
-      }
+      const signinUrl = new URL('/signin', request.url);
+      signinUrl.searchParams.set('from', pathname);
+      return NextResponse.redirect(signinUrl);
     }
 
     return NextResponse.next();
   } catch (error) {
     console.error('Middleware error:', error);
-    // On error, redirect to home page
     return NextResponse.redirect(new URL('/', request.url));
   }
+
+  // Vérifier si nous sommes en production
+  if (process.env.NODE_ENV === 'production') {
+    // Vérifier si la requête est en HTTP
+    if (!request.headers.get('x-forwarded-proto')?.includes('https')) {
+      // Rediriger vers HTTPS
+      return NextResponse.redirect(
+        `https://${request.headers.get('host')}${request.nextUrl.pathname}`,
+        301
+      );
+    }
+  }
+
+  // Ajouter les en-têtes de sécurité
+  const response = NextResponse.next();
+  
+  // Strict-Transport-Security
+  response.headers.set(
+    'Strict-Transport-Security',
+    'max-age=31536000; includeSubDomains; preload'
+  );
+  
+  // Content-Security-Policy
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;"
+  );
+  
+  // X-Content-Type-Options
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  
+  // X-Frame-Options
+  response.headers.set('X-Frame-Options', 'DENY');
+  
+  // X-XSS-Protection
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  
+  // Referrer-Policy
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  return response;
 }
 
-// Configure which routes should be protected
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ]
 }; 

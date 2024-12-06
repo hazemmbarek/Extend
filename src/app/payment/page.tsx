@@ -2,7 +2,7 @@
 import './payment.css';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const stripePromise = loadStripe('pk_test_51QR0ayP9Uhv3khdSOtjef6CTtqkheeK5JMSw1N6iZH0u2hnmVBj7B5fs0vsG0TtXItIY1WqewT4AY6UL9qIcoEwV00uCiAvv2T');
 
@@ -353,16 +353,31 @@ const D17PaymentForm = ({ onClose }: { onClose: () => void }) => {
 };
 
 export default function PaymentPage() {
+  const [paymentInfo, setPaymentInfo] = useState<any>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showFlouciModal, setShowFlouciModal] = useState(false);
   const [showD17Modal, setShowD17Modal] = useState(false);
 
+  useEffect(() => {
+    // Récupérer les infos de la formation
+    const storedInfo = sessionStorage.getItem('paymentInfo');
+    if (storedInfo) {
+      setPaymentInfo(JSON.parse(storedInfo));
+    }
+  }, []);
+
   return (
     <>
-      {/* Paiements Header */}
       <section className="paiements-header">
         <div className="container">
-          <h1>Méthodes de Paiement</h1>
+          <h1>Paiement de la Formation</h1>
+          {paymentInfo && (
+            <div className="payment-info">
+              <h2>{paymentInfo.title}</h2>
+              <p className="price">Prix: {paymentInfo.price} DT</p>
+              <p>Durée: {paymentInfo.duration}h</p>
+            </div>
+          )}
         </div>
       </section>
 

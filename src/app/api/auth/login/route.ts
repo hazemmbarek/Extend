@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   const pool = initDB();
   
   try {
-    const { email, password } = await request.json();
+    const { email, password, rememberMe } = await request.json();
 
     const [rows] = await pool.query(
       'SELECT * FROM extend.users WHERE email = ?',
@@ -26,47 +26,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
 
+    // Set expiration based on rememberMe
+    const expiresIn = rememberMe ? '30d' : '24h';
+
     // Create JWT token
     const token = jwt.sign(
       { 
-        userId: user.user_id,
+        userId: user.id,
         email: user.email,
         username: user.username
       },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
+      process.env.JWT_SECRET!,
+      { expiresIn }
     );
 
-    // Set HTTP-only cookie
+    // Create response
     const response = NextResponse.json(
-      { 
-        message: 'Login successful',
-        user: {
-          id: user.user_id,
-          email: user.email,
-          username: user.username
-        }
-      },
+      { message: 'Login successful' },
       { status: 200 }
     );
 
-    response.cookies.set('auth_token', token, {
-      httpOnly: true,
+    // Set cookie with expiration based on rememberMe
+    response.cookies.set({
+      name: 'auth_token',
+      value: token,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 86400 // 24 hours
+      sameSite: 'lax',
+      path: '/',
+      maxAge: rememberMe ? 60 * 60 * 24 * 30 : undefined, // 30 days if rememberMe, otherwise session cookie
+      expires: rememberMe ? new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) : undefined // 30 days if rememberMe
     });
-
-    // Set profile creation token if coming from signup
-    const isFromSignup = request.headers.get('X-From-Signup') === 'true';
-    if (isFromSignup) {
-      response.cookies.set('profile_creation_token', 'true', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 300 // 5 minutes
-      });
-    }
 
     return response;
 

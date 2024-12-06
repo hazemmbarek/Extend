@@ -2,12 +2,58 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SignIn() {
-  const handleSubmit = (e: FormEvent) => {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    remember: false
+  });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Logique de connexion
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Une erreur est survenue');
+      }
+
+      // Redirect to homepage on successful login
+      router.push('/');
+      
+    } catch (err: any) {
+      setError(err.message || 'Une erreur est survenue lors de la connexion');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -30,6 +76,12 @@ export default function SignIn() {
           <p>Accédez à votre espace membre</p>
         </div>
 
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -37,9 +89,12 @@ export default function SignIn() {
               type="email" 
               className="form-control" 
               id="email" 
-              name="email" 
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               required 
               placeholder="Votre adresse email"
+              disabled={isLoading}
             />
           </div>
 
@@ -49,9 +104,12 @@ export default function SignIn() {
               type="password" 
               className="form-control" 
               id="password" 
-              name="password" 
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               required 
               placeholder="Votre mot de passe"
+              disabled={isLoading}
             />
           </div>
 
@@ -61,6 +119,10 @@ export default function SignIn() {
                 type="checkbox" 
                 className="form-check-input" 
                 id="remember"
+                name="remember"
+                checked={formData.remember}
+                onChange={handleChange}
+                disabled={isLoading}
               />
               <label className="form-check-label" htmlFor="remember">
                 Se souvenir de moi
@@ -71,7 +133,13 @@ export default function SignIn() {
             </Link>
           </div>
 
-          <button type="submit" className="btn-login">Se connecter</button>
+          <button 
+            type="submit" 
+            className="btn-login"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Connexion...' : 'Se connecter'}
+          </button>
         </form>
 
         <div className="login-footer">

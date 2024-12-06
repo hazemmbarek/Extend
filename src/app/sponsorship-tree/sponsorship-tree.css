@@ -1,0 +1,148 @@
+.tree-container {
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.tree-node {
+  background: white;
+  border: 2px solid #6A1B9A;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 0.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  min-width: 200px;
+}
+
+.tree-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(106, 27, 154, 0.15);
+}
+
+.tree-node.inactive {
+  border-color: #dc3545;
+  opacity: 0.7;
+}
+
+.tree-node-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.tree-node-avatar {
+  width: 40px;
+  height: 40px;
+  background: #6A1B9A;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  margin-right: 0.75rem;
+}
+
+.tree-node-info {
+  flex: 1;
+}
+
+.tree-node-name {
+  font-weight: 600;
+  color: #6A1B9A;
+  margin: 0;
+}
+
+.tree-node-details {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.tree-node-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+}
+
+.tree-node-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tree-node-stat-label {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.tree-node-stat-value {
+  font-weight: 600;
+  color: #6A1B9A;
+}
+
+.tree-level {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.tree-level::before {
+  content: '';
+  position: absolute;
+  top: -1rem;
+  left: 50%;
+  width: 2px;
+  height: 1rem;
+  background: #6A1B9A;
+}
+
+.tree-level:first-child::before {
+  display: none;
+}
+
+.tree-node-badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background: #6A1B9A;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+}
+
+.tree-node-referral {
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tree-node-referral-code {
+  font-family: monospace;
+  color: #6A1B9A;
+  font-weight: 600;
+}
+
+.copy-button {
+  background: none;
+  border: none;
+  color: #6A1B9A;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: opacity 0.3s ease;
+}
+
+.copy-button:hover {
+  opacity: 0.7;
+} 
