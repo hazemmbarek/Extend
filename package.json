@@ -5,6 +5,7 @@
     "@stripe/stripe-js": "^5.2.0",
     "aos": "^2.3.4",
     "autoprefixer": "^10.4.20",
+<<<<<<< HEAD
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "glightbox": "^3.3.0",
@@ -14,6 +15,22 @@
     "stripe": "^17.4.0",
     "swiper": "^11.1.15",
     "tailwindcss": "^3.4.15"
+=======
+    "bcryptjs": "^2.4.3",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "glightbox": "^3.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.5",
+    "next": "^15.0.3",
+    "next-auth": "^5.0.0-beta.25",
+    "postcss": "^8.4.49",
+    "stripe": "^17.4.0",
+    "swiper": "^11.1.15",
+    "tailwindcss": "^3.4.15",
+    "uuid": "^11.0.3",
+    "zod": "^3.23.8"
+>>>>>>> 11b73ee9444ac7621da314ddbbe0f80c551db55b
   },
   "devDependencies": {
     "@types/react": "18.3.12",
